@@ -1,0 +1,104 @@
+---
+
+description: Reglas de testing del proyecto
+globs:
+
+* "test/**/*.dart"
+* "lib/**/*.dart"
+  alwaysApply: false
+
+---
+
+# Testing Rules
+
+## Principio
+
+Las partes importantes de la aplicación deben poder probarse sin depender de la UI.
+
+Priorizar tests sobre lógica de negocio y persistencia.
+
+## Unit tests
+
+Crear unit tests para:
+
+* SpacedRepetitionService
+* cálculo de intervalos
+* estadísticas
+* validaciones
+* transformación de datos
+* repositories cuando sea necesario
+
+## SRS
+
+El sistema de repetición espaciada debe tener tests específicos.
+
+Probar como mínimo:
+
+```text
+Again
+Hard
+Good
+Easy
+```
+
+También comprobar:
+
+* primera revisión
+* revisiones posteriores
+* actualización del intervalo
+* cálculo de próxima fecha
+* tarjetas pendientes
+
+## Repositories
+
+Probar:
+
+* creación
+* lectura
+* actualización
+* eliminación
+* búsquedas
+* filtros
+* relaciones
+
+## Widgets
+
+Utilizar widget tests para componentes importantes:
+
+* FlashCard
+* FlipCard
+* StudyRatingButtons
+* ProgressBar
+* AudioPlayer
+* formularios de creación
+
+## Tests
+
+Los tests deben ser:
+
+* deterministas
+* independientes
+* fáciles de leer
+* rápidos
+
+Evitar tests excesivamente acoplados a detalles internos de implementación.
+
+## Regresión
+
+Cuando se corrija un bug importante:
+
+1. Reproducir el problema.
+2. Crear un test que lo detecte.
+3. Corregir el problema.
+4. Verificar que el test pasa.
+
+## Calidad
+
+Antes de considerar una funcionalidad terminada:
+
+```text
+flutter analyze
+flutter test
+```
+
+No ignorar errores o warnings sin una razón justificada.

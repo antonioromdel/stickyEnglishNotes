@@ -1,0 +1,153 @@
+---
+
+description: Arquitectura y organización del código Flutter
+globs:
+
+* "lib/**/*.dart"
+  alwaysApply: false
+
+---
+
+# Architecture Rules
+
+## Arquitectura
+
+Utilizar una arquitectura organizada por funcionalidades:
+
+```text
+lib/
+├── core/
+│   ├── constants/
+│   ├── router/
+│   ├── theme/
+│   ├── utils/
+│   └── widgets/
+│
+├── features/
+│   ├── home/
+│   ├── cards/
+│   ├── groups/
+│   ├── study/
+│   ├── statistics/
+│   └── settings/
+│
+├── data/
+│   ├── database/
+│   ├── models/
+│   └── repositories/
+│
+└── main.dart
+```
+
+## Features
+
+Cada feature debe contener su propia lógica relacionada.
+
+Ejemplo:
+
+```text
+features/study/
+├── presentation/
+│   ├── pages/
+│   └── widgets/
+├── application/
+│   └── study_controller.dart
+└── domain/
+    └── study_session.dart
+```
+
+No colocar toda la aplicación dentro de `screens/`, `services/` o `controllers/` globales.
+
+## Capas
+
+Utilizar estas responsabilidades:
+
+### Presentation
+
+Responsable de:
+
+* Widgets
+* Pages
+* Animaciones
+* Interacción con el usuario
+* Renderizado del estado
+
+No debe contener lógica compleja de negocio.
+
+### Application
+
+Responsable de:
+
+* Casos de uso
+* Estado de la aplicación
+* Coordinación entre UI y repositorios
+
+### Domain
+
+Responsable de:
+
+* Entidades
+* Reglas de negocio
+* Modelos independientes de Flutter cuando sea posible
+
+### Data
+
+Responsable de:
+
+* SQLite
+* Drift
+* Repositories
+* Persistencia
+
+## Riverpod
+
+Utilizar Riverpod para:
+
+* Estado de UI
+* Estado de features
+* Inyección de dependencias
+* Acceso a repositories
+
+Evitar variables globales mutables.
+
+Preferir providers pequeños y específicos.
+
+## Repositories
+
+La UI nunca debe acceder directamente a Drift o SQLite.
+
+Flujo esperado:
+
+```text
+UI
+ ↓
+Controller / Provider
+ ↓
+Repository
+ ↓
+Database
+```
+
+## Navegación
+
+Utilizar GoRouter.
+
+Las rutas deben estar centralizadas y ser fáciles de localizar.
+
+No utilizar navegación manual dispersa por toda la aplicación.
+
+## Widgets reutilizables
+
+Antes de crear un widget nuevo:
+
+1. Comprobar si ya existe uno reutilizable.
+2. Si el componente tiene uso en varias partes, moverlo a `core/widgets`.
+3. Si pertenece exclusivamente a una feature, mantenerlo dentro de esa feature.
+
+No crear widgets genéricos prematuramente.
+
+## Dependencias
+
+No introducir una nueva dependencia para resolver algo que Flutter ya puede hacer de forma sencilla.
+
+Toda nueva dependencia debe tener una justificación técnica.

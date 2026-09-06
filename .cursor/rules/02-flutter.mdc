@@ -1,0 +1,121 @@
+---
+
+description: Buenas prácticas de Flutter y Dart
+globs:
+
+* "lib/**/*.dart"
+* "test/**/*.dart"
+  alwaysApply: false
+
+---
+
+# Flutter and Dart Rules
+
+## Dart
+
+Seguir las convenciones oficiales de Dart.
+
+Priorizar:
+
+* Null safety
+* `final` cuando una variable no necesita cambiar
+* Tipos explícitos cuando mejoren la legibilidad
+* Funciones pequeñas
+* Clases con responsabilidades claras
+* Código fácilmente testeable
+
+Evitar:
+
+* `dynamic` sin necesidad
+* `!` innecesarios
+* `late` cuando pueda evitarse
+* métodos excesivamente largos
+* clases que hagan demasiadas cosas
+
+## Widgets
+
+Preferir widgets pequeños y componibles.
+
+Evitar widgets gigantes con cientos de líneas.
+
+Si una sección tiene una responsabilidad visual clara, convertirla en widget independiente.
+
+## Estado
+
+No utilizar `setState` para estado que deba compartirse entre widgets o features.
+
+Utilizar Riverpod para estado de aplicación.
+
+`setState` es válido para estados locales y simples de UI.
+
+## Build methods
+
+Evitar lógica compleja dentro de `build()`.
+
+No realizar:
+
+* consultas a base de datos
+* operaciones costosas
+* cálculos complejos
+* llamadas a servicios
+
+dentro de `build()`.
+
+## Async
+
+Gestionar correctamente estados:
+
+* loading
+* data
+* error
+* empty
+
+No dejar operaciones asíncronas sin gestionar.
+
+## Animaciones
+
+Las animaciones deben mejorar la experiencia y no distraer.
+
+Preferir:
+
+* `AnimatedContainer`
+* `AnimatedOpacity`
+* `AnimatedSwitcher`
+* `TweenAnimationBuilder`
+* Animaciones explícitas cuando sean necesarias
+
+No añadir animaciones a todos los elementos.
+
+## Performance
+
+Evitar reconstrucciones innecesarias.
+
+Utilizar:
+
+* `const` cuando sea posible
+* listas eficientes
+* providers correctamente definidos
+* widgets pequeños
+
+No optimizar prematuramente sin evidencia de problemas.
+
+## Accesibilidad
+
+Los elementos interactivos deben:
+
+* tener un tamaño táctil razonable
+* ser comprensibles
+* mantener contraste suficiente
+* funcionar correctamente con diferentes tamaños de texto
+
+## Errores
+
+Nunca ocultar silenciosamente errores.
+
+Mostrar estados de error apropiados al usuario y registrar información suficiente para depuración.
+
+## Responsive
+
+La interfaz debe adaptarse correctamente a diferentes tamaños de pantalla.
+
+No utilizar dimensiones rígidas innecesariamente.

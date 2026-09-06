@@ -1,0 +1,144 @@
+---
+
+description: Reglas para Drift y persistencia local
+globs:
+
+* "lib/data/**/*.dart"
+  alwaysApply: false
+
+---
+
+# Database Rules
+
+## Persistencia
+
+Utilizar Drift sobre SQLite como sistema principal de persistencia.
+
+La aplicación debe funcionar offline.
+
+## Entidades principales
+
+El modelo debe contemplar como mínimo:
+
+### Card
+
+```text
+id
+groupId
+type
+front
+back
+example
+audioPath
+difficulty
+tags
+source
+createdAt
+updatedAt
+lastReviewAt
+nextReviewAt
+interval
+repetitions
+correctAnswers
+incorrectAnswers
+```
+
+### Group
+
+```text
+id
+name
+description
+createdAt
+updatedAt
+```
+
+### Review
+
+```text
+id
+cardId
+result
+difficulty
+reviewedAt
+previousInterval
+newInterval
+```
+
+### Error
+
+```text
+id
+cardId
+userAnswer
+correctAnswer
+note
+createdAt
+```
+
+## Relaciones
+
+Una Group puede contener muchas Cards.
+
+Una Card puede tener muchas Reviews.
+
+Una Card puede tener muchos Errors.
+
+```text
+Group
+  │
+  └── Cards
+       ├── Reviews
+       └── Errors
+```
+
+## Repositories
+
+La aplicación debe acceder a la base de datos mediante repositories.
+
+No acceder directamente a DAOs desde la UI.
+
+## Migraciones
+
+Cualquier cambio estructural de la base de datos debe incluir la migración correspondiente.
+
+Nunca modificar una tabla existente sin considerar usuarios que ya tengan datos.
+
+## Fechas
+
+Utilizar `DateTime` de Dart.
+
+Guardar fechas de manera consistente.
+
+## IDs
+
+Utilizar IDs estables y únicos.
+
+No depender de índices de listas como identificadores.
+
+## Queries
+
+Las consultas deben vivir en la capa de datos.
+
+Evitar realizar filtrados complejos sobre listas completas cuando pueda realizarse correctamente mediante SQLite.
+
+## Integridad
+
+Evitar datos huérfanos.
+
+Cuando se elimine un Group, definir explícitamente qué ocurre con sus Cards.
+
+La eliminación debe ser intencionada y segura.
+
+## Evolución
+
+La estructura debe permitir añadir posteriormente:
+
+* sincronización
+* cuentas de usuario
+* backend
+* importación/exportación
+* IA
+* estadísticas avanzadas
+
+sin acoplar la UI a SQLite.

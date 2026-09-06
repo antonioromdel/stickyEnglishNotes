@@ -1,0 +1,78 @@
+---
+description: Reglas generales del proyecto de flashcards
+alwaysApply: true
+-----------------
+
+# Project Rules
+
+## Objetivo
+
+Esta aplicación es una app móvil de flashcards desarrollada con Flutter y Dart.
+
+Su objetivo inicial es ayudar al aprendizaje de inglés mediante tarjetas, repetición espaciada, seguimiento de errores y estadísticas.
+
+La arquitectura debe permitir ampliar posteriormente la aplicación a otros idiomas y materias.
+
+## Stack
+
+* Flutter
+* Dart
+* Material 3
+* Riverpod para gestión de estado
+* GoRouter para navegación
+* Drift + SQLite para persistencia local
+* SharedPreferences únicamente para preferencias simples
+
+## Principios generales
+
+* Priorizar código sencillo, mantenible y legible.
+* Evitar sobreingeniería.
+* No crear abstracciones innecesarias.
+* Separar claramente UI, lógica de negocio y acceso a datos.
+* Preferir composición sobre herencia.
+* Crear componentes reutilizables cuando exista una necesidad real.
+* Mantener las funcionalidades desacopladas.
+* No duplicar lógica.
+* No introducir dependencias externas sin necesidad.
+
+## Offline first
+
+La aplicación debe funcionar completamente sin conexión.
+
+No introducir backend, autenticación, sincronización o servicios externos salvo que se solicite explícitamente.
+
+La arquitectura debe permitir añadir estas funcionalidades en el futuro sin tener que rehacer la aplicación.
+
+## Código
+
+Antes de crear código nuevo:
+
+1. Revisar la arquitectura existente.
+2. Buscar componentes reutilizables.
+3. Comprobar si ya existe una solución para el problema.
+4. Mantener consistencia con el código existente.
+
+No modificar archivos no relacionados con la tarea.
+
+## UX
+
+La aplicación debe sentirse como un producto móvil terminado, no como un CRUD.
+
+Prioridades:
+
+1. Estudiar una tarjeta.
+2. Crear una tarjeta.
+3. Continuar una sesión.
+4. Consultar progreso.
+
+Las acciones principales deben requerir el menor número posible de interacciones.
+
+## Cambios
+
+Cuando se implemente una funcionalidad:
+
+* Implementar primero la solución más sencilla que cumpla los requisitos.
+* No implementar funcionalidades futuras por adelantado.
+* Mantener la compatibilidad con las funcionalidades existentes.
+* No eliminar código funcional sin una razón clara.
+* Si una decisión arquitectónica es importante, documentarla.

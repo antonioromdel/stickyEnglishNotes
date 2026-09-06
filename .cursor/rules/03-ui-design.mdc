@@ -1,0 +1,178 @@
+---
+
+description: Sistema visual y reglas de diseño de la aplicación
+globs:
+
+* "lib/**/*.dart"
+  alwaysApply: false
+
+---
+
+# UI Design Rules
+
+## Concepto visual
+
+La aplicación debe transmitir:
+
+* Premium
+* Minimalista
+* Moderna
+* Limpia
+* Calmante
+* Enfocada en el aprendizaje
+
+La tarjeta debe ser el protagonista visual de la aplicación.
+
+## Flashcards
+
+Las tarjetas deben parecer tarjetas físicas reales.
+
+Utilizar:
+
+* bordes redondeados
+* sombras suaves
+* profundidad
+* separación visual del fondo
+* tipografía grande
+* mucho espacio en blanco
+* jerarquía tipográfica clara
+
+Evitar diseños que parezcan formularios CRUD.
+
+## Colores
+
+Utilizar un sistema de colores centralizado mediante ThemeData.
+
+No introducir colores arbitrarios directamente en widgets.
+
+Evitar exceso de colores.
+
+Los colores deben tener una función:
+
+* Primary
+* Secondary
+* Surface
+* Background
+* Error
+* Success
+
+## Gradientes
+
+Los gradientes pueden utilizarse de forma sutil para aportar profundidad.
+
+No utilizar gradientes excesivamente llamativos.
+
+## Sombras
+
+Las sombras deben ser suaves y naturales.
+
+Evitar sombras negras demasiado fuertes.
+
+## Bordes
+
+Preferir bordes redondeados.
+
+Mantener consistencia en:
+
+* cards
+* botones
+* inputs
+* chips
+* diálogos
+
+## Espaciado
+
+Utilizar un sistema consistente de spacing.
+
+Preferir múltiplos de:
+
+```text
+4
+8
+12
+16
+24
+32
+48
+```
+
+No utilizar valores aleatorios constantemente.
+
+## Tipografía
+
+La jerarquía debe ser clara:
+
+* título
+* subtítulo
+* contenido
+* metadata
+* acciones
+
+Las palabras de las flashcards deben tener suficiente tamaño para poder estudiarse cómodamente.
+
+## Dark mode
+
+La aplicación debe soportar Light y Dark Mode.
+
+No asumir que un color funciona correctamente en ambos modos.
+
+Utilizar los colores definidos en el ThemeData.
+
+## Animación de tarjetas
+
+La tarjeta debe poder voltearse mediante una animación 3D.
+
+El flujo debe ser:
+
+```text
+Front
+ ↓
+Tap
+ ↓
+Flip animation
+ ↓
+Back
+```
+
+La animación debe sentirse natural y rápida.
+
+## Feedback
+
+Las acciones importantes deben proporcionar feedback visual:
+
+* tarjeta marcada como difícil
+* respuesta correcta
+* respuesta incorrecta
+* progreso de sesión
+* tarjeta guardada
+* tarjeta eliminada
+
+## Estados vacíos
+
+Todos los listados importantes deben tener estados vacíos diseñados.
+
+No mostrar simplemente una pantalla en blanco.
+
+Ejemplo:
+
+```text
+No tienes tarjetas todavía.
+
+Crea tu primera tarjeta para comenzar a estudiar.
+```
+
+## Loading
+
+Los estados de carga deben estar diseñados.
+
+Evitar pantallas bloqueadas sin feedback.
+
+## Formularios
+
+Los formularios deben ser simples y rápidos.
+
+Crear una tarjeta básica debe poder hacerse en pocos segundos.
+
+## Principio principal
+
+La aplicación debe priorizar la experiencia de estudiar sobre la gestión administrativa de tarjetas.

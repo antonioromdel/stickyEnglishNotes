@@ -1,0 +1,177 @@
+---
+
+description: Reglas del sistema de estudio y repetición espaciada
+globs:
+
+* "lib/features/study/**/*.dart"
+* "lib/data/**/*.dart"
+  alwaysApply: false
+
+---
+
+# Study System Rules
+
+## Objetivo
+
+El sistema de estudio debe ayudar al usuario a recordar información a largo plazo.
+
+La experiencia debe ser rápida y centrada.
+
+## Flujo
+
+```text
+Start Study
+    ↓
+Show Card
+    ↓
+User thinks
+    ↓
+Flip Card
+    ↓
+Show answer
+    ↓
+Rate difficulty
+    ↓
+Update SRS
+    ↓
+Next Card
+```
+
+## Valoraciones
+
+Utilizar inicialmente cuatro opciones:
+
+```text
+Again
+Hard
+Good
+Easy
+```
+
+## Repetición espaciada inicial
+
+Comportamiento inicial:
+
+```text
+Again → 5 minutos
+Hard  → 1 día
+Good  → 2 días
+Easy  → 4 días
+```
+
+Los intervalos deben aumentar progresivamente según el historial.
+
+Este sistema debe estar encapsulado en un servicio independiente.
+
+Ejemplo conceptual:
+
+```text
+SpacedRepetitionService
+        ↓
+calculateNextReview()
+        ↓
+nextInterval
+nextReviewAt
+```
+
+No colocar el algoritmo directamente en la pantalla de estudio.
+
+## Evolución
+
+La implementación inicial debe ser sencilla.
+
+Diseñar `SpacedRepetitionService` para poder sustituir posteriormente el algoritmo por uno más avanzado, como SM-2 u otro sistema basado en memoria.
+
+## Reviews
+
+Cada respuesta del usuario debe generar un registro de Review.
+
+Guardar:
+
+* tarjeta
+* resultado
+* dificultad
+* fecha
+* intervalo anterior
+* nuevo intervalo
+
+## Errores
+
+Las respuestas incorrectas deben registrarse.
+
+La sección "Mis errores" debe poder utilizar estos datos posteriormente.
+
+## Tarjetas pendientes
+
+Una tarjeta está pendiente cuando su `nextReviewAt` es menor o igual a la fecha actual.
+
+No considerar pendientes tarjetas cuya fecha de revisión sea futura.
+
+## Sesiones
+
+Una sesión debe:
+
+* mostrar progreso
+* mantener el foco en una tarjeta
+* permitir voltear la tarjeta
+* permitir valorar dificultad
+* avanzar rápidamente a la siguiente tarjeta
+
+Evitar elementos innecesarios durante el estudio.
+
+## Dificultad
+
+La tarjeta puede tener una dificultad general:
+
+```text
+Easy
+Normal
+Hard
+```
+
+Esto es diferente de la valoración de una revisión.
+
+La dificultad representa la percepción general de la tarjeta.
+
+La valoración representa el resultado de una sesión concreta.
+
+## Estadísticas
+
+Las estadísticas deben utilizar datos reales de Reviews.
+
+No calcular estadísticas ficticias ni valores aleatorios.
+
+Métricas iniciales:
+
+* tarjetas estudiadas
+* respuestas correctas
+* respuestas incorrectas
+* precisión
+* tarjetas pendientes
+* racha
+* actividad diaria
+
+## Fuente de tarjetas
+
+Las tarjetas pueden tener un origen:
+
+```text
+manual
+mistake
+ai
+imported
+```
+
+Esto permitirá posteriormente identificar tarjetas creadas a partir de errores del usuario.
+
+Ejemplo:
+
+```text
+I miss talk to people.
+
+→
+
+I miss talking to people.
+```
+
+La aplicación debe poder utilizar este concepto para crear posteriormente una sección de errores frecuentes.
