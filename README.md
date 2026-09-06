@@ -1,4 +1,4 @@
-# Sticky English Notes
+# Sticky Notes English
 
 App móvil de flashcards para aprender inglés. Funciona completamente sin conexión: las tarjetas, las revisiones y las estadísticas viven en el dispositivo.
 

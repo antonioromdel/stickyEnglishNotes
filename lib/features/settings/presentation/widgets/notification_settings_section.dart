@@ -7,11 +7,56 @@ import '../../../../core/widgets/paper_card.dart';
 import '../../application/notification_settings_controller.dart';
 import '../../domain/notification_reminder_settings.dart';
 
-class NotificationSettingsSection extends ConsumerWidget {
+class NotificationSettingsSection extends ConsumerStatefulWidget {
   const NotificationSettingsSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationSettingsSection> createState() =>
+      _NotificationSettingsSectionState();
+}
+
+class _NotificationSettingsSectionState
+    extends ConsumerState<NotificationSettingsSection>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncAfterResume();
+    }
+  }
+
+  Future<void> _syncAfterResume() async {
+    final denied =
+        await ref.read(notificationSettingsProvider.notifier).syncWithSystem();
+    if (!denied || !mounted) return;
+    _showDeniedMessage();
+  }
+
+  void _showDeniedMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Sin permiso no podemos enviarte recordatorios.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(notificationSettingsProvider);
     final theme = Theme.of(context);
 
@@ -49,7 +94,7 @@ class NotificationSettingsSection extends ConsumerWidget {
                   Switch(
                     key: const Key('notifications-enabled-switch'),
                     value: settings.enabled,
-                    onChanged: (enabled) => _setEnabled(context, ref, enabled),
+                    onChanged: _setEnabled,
                   ),
                 ],
               ),
@@ -68,7 +113,7 @@ class NotificationSettingsSection extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 InkWell(
                   key: const Key('notification-time'),
-                  onTap: () => _pickTime(context, ref, settings),
+                  onTap: () => _pickTime(settings),
                   borderRadius: BorderRadius.circular(AppRadii.sm),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -95,30 +140,15 @@ class NotificationSettingsSection extends ConsumerWidget {
     );
   }
 
-  Future<void> _setEnabled(
-    BuildContext context,
-    WidgetRef ref,
-    bool enabled,
-  ) async {
-    final accepted =
-        await ref.read(notificationSettingsProvider.notifier).setEnabled(enabled);
-    if (accepted || !enabled || !context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Sin permiso no podemos enviarte recordatorios.',
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _setEnabled(bool enabled) async {
+    final controller = ref.read(notificationSettingsProvider.notifier);
+    final accepted = await controller.setEnabled(enabled);
+    if (!mounted) return;
+    if (accepted || !enabled || controller.isAwaitingPermission) return;
+    _showDeniedMessage();
   }
 
-  Future<void> _pickTime(
-    BuildContext context,
-    WidgetRef ref,
-    NotificationReminderSettings settings,
-  ) async {
+  Future<void> _pickTime(NotificationReminderSettings settings) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: settings.hour, minute: settings.minute),

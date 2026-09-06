@@ -26,6 +26,10 @@ final studyReminderServiceProvider = Provider<StudyReminderService>((ref) {
 class NotificationSettingsController
     extends Notifier<NotificationReminderSettings> {
   bool _busy = false;
+  bool _awaitingPermission = false;
+  bool _syncWhenIdle = false;
+
+  bool get isAwaitingPermission => _awaitingPermission;
 
   @override
   NotificationReminderSettings build() {
@@ -36,10 +40,39 @@ class NotificationSettingsController
     if (_busy) return state.enabled;
     _busy = true;
     try {
-      state = await ref.read(studyReminderServiceProvider).setEnabled(enabled);
-      return state.enabled;
+      if (!enabled) {
+        _awaitingPermission = false;
+        state = await ref.read(studyReminderServiceProvider).setEnabled(false);
+        return false;
+      }
+
+      _awaitingPermission = true;
+      final service = ref.read(studyReminderServiceProvider);
+      final next = await service.setEnabled(true);
+      if (!ref.mounted) return next.enabled;
+
+      if (next.enabled) {
+        _awaitingPermission = false;
+        state = next;
+        return true;
+      }
+
+      final granted = await ref.read(notificationPermissionClientProvider).isGranted();
+      if (!ref.mounted) return false;
+      if (granted) {
+        _awaitingPermission = false;
+        state = await service.applyGrantedPermission();
+        return true;
+      }
+
+      state = next;
+      return false;
     } finally {
       _busy = false;
+      if (_syncWhenIdle) {
+        _syncWhenIdle = false;
+        await syncWithSystem();
+      }
     }
   }
 
@@ -66,6 +99,39 @@ class NotificationSettingsController
     } finally {
       _busy = false;
     }
+  }
+
+  /// Tras el diálogo del sistema, Android a veces no notifica a Flutter.
+  /// Devuelve true si hay que avisar de que el permiso se denegó.
+  Future<bool> syncWithSystem() async {
+    if (_busy) {
+      _syncWhenIdle = true;
+      return false;
+    }
+
+    final granted =
+        await ref.read(notificationPermissionClientProvider).isGranted();
+    if (!ref.mounted) return false;
+
+    final service = ref.read(studyReminderServiceProvider);
+    final stored = service.load();
+
+    if (granted && (_awaitingPermission || stored.enabled || state.enabled)) {
+      _awaitingPermission = false;
+      state = await service.applyGrantedPermission();
+      return false;
+    }
+
+    if (!granted && _awaitingPermission) {
+      _awaitingPermission = false;
+      state = await service.disableLocally();
+      return true;
+    }
+
+    if (stored != state) {
+      state = stored;
+    }
+    return false;
   }
 }
 

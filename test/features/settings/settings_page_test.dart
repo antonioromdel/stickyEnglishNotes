@@ -72,6 +72,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('notifications-enabled-switch')));
     await tester.pumpAndSettle();
+    await _resumeApp(tester);
 
     expect(find.text('Sin permiso no podemos enviarte recordatorios.'), findsOneWidget);
     expect(find.text('L'), findsNothing);
@@ -82,4 +83,65 @@ void main() {
       isFalse,
     );
   });
+
+  testWidgets(
+    'al volver a la app muestra días y hora si el permiso se aceptó',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = await SharedPreferences.getInstance();
+      final permissions = FakeNotificationPermissionClient(
+        requestShouldGrant: false,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) => preferences),
+            studyReminderSchedulerProvider.overrideWith(
+              (ref) => FakeStudyReminderScheduler(),
+            ),
+            notificationPermissionClientProvider.overrideWith(
+              (ref) => permissions,
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light,
+            home: const SettingsPage(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('notifications-enabled-switch')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('L'), findsNothing);
+      expect(
+        tester.widget<Switch>(
+          find.byKey(const Key('notifications-enabled-switch')),
+        ).value,
+        isFalse,
+      );
+
+      permissions.granted = true;
+      await _resumeApp(tester);
+
+      expect(find.text('L'), findsOneWidget);
+      expect(find.text('09:00'), findsOneWidget);
+      expect(
+        tester.widget<Switch>(
+          find.byKey(const Key('notifications-enabled-switch')),
+        ).value,
+        isTrue,
+      );
+    },
+  );
+}
+
+Future<void> _resumeApp(WidgetTester tester) async {
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+  await tester.pump();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+  await tester.pumpAndSettle();
 }

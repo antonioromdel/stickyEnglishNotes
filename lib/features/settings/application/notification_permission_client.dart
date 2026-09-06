@@ -55,31 +55,35 @@ class FlutterNotificationPermissionClient implements NotificationPermissionClien
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
-      return await android.requestNotificationsPermission() ?? false;
+      final requested = await android.requestNotificationsPermission();
+      if (requested == true) return true;
+      return isGranted();
     }
 
     final ios = _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
     if (ios != null) {
-      return await ios.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ) ??
-          false;
+      final requested = await ios.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (requested == true) return true;
+      return isGranted();
     }
 
     final macOS = _plugin
         .resolvePlatformSpecificImplementation<
             MacOSFlutterLocalNotificationsPlugin>();
     if (macOS != null) {
-      return await macOS.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ) ??
-          false;
+      final requested = await macOS.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (requested == true) return true;
+      return isGranted();
     }
 
     return false;

@@ -81,7 +81,18 @@ class StudyReminderService {
       return disabled;
     }
 
-    return _persistAndApply(current.copyWith(enabled: true));
+    return applyGrantedPermission();
+  }
+
+  Future<NotificationReminderSettings> applyGrantedPermission() {
+    return _persistAndApply(load().copyWith(enabled: true));
+  }
+
+  Future<NotificationReminderSettings> disableLocally() async {
+    final disabled = load().copyWith(enabled: false);
+    await _save(disabled);
+    await _scheduler.cancelAll();
+    return disabled;
   }
 
   Future<NotificationReminderSettings> updateSchedule({

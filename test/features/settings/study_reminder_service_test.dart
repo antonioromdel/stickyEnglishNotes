@@ -56,6 +56,28 @@ void main() {
     expect(scheduler.lastScheduled, isNull);
   });
 
+  test('con permiso ya concedido activa y programa sin pedir de nuevo', () async {
+    permissions.granted = true;
+
+    final settings = await service.applyGrantedPermission();
+
+    expect(settings.enabled, isTrue);
+    expect(permissions.requestCount, 0);
+    expect(scheduler.lastScheduled?.enabled, isTrue);
+  });
+
+  test('apagar en local no revoca el permiso del sistema', () async {
+    await service.setEnabled(true);
+    expect(permissions.granted, isTrue);
+
+    final disabled = await service.disableLocally();
+
+    expect(disabled.enabled, isFalse);
+    expect(permissions.granted, isTrue);
+    expect(permissions.revokeCount, 0);
+    expect(scheduler.lastScheduled, isNull);
+  });
+
   test('cambiar días u hora reprograme el recordatorio', () async {
     await service.setEnabled(true);
 
