@@ -24,7 +24,6 @@ El modelo debe contemplar como mínimo:
 
 ```text
 id
-groupId
 type
 front
 back
@@ -76,9 +75,18 @@ note
 createdAt
 ```
 
+### CardGroupMembership
+
+```text
+cardId
+groupId
+```
+
 ## Relaciones
 
-Una Group puede contener muchas Cards.
+Un Group puede contener muchas Cards.
+
+Una Card puede pertenecer a varios Groups.
 
 Una Card puede tener muchas Reviews.
 
@@ -87,9 +95,11 @@ Una Card puede tener muchos Errors.
 ```text
 Group
   │
-  └── Cards
-       ├── Reviews
-       └── Errors
+  └── CardGroupMemberships
+         │
+         └── Cards
+              ├── Reviews
+              └── Errors
 ```
 
 ## Repositories
@@ -126,7 +136,7 @@ Evitar realizar filtrados complejos sobre listas completas cuando pueda realizar
 
 Evitar datos huérfanos.
 
-Cuando se elimine un Group, definir explícitamente qué ocurre con sus Cards.
+Cuando se elimine un Group, las tarjetas que solo estaban en ese grupo pasan a General. Si una tarjeta pertenece a más grupos, se queda en ellos.
 
 La eliminación debe ser intencionada y segura.
 

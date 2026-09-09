@@ -378,20 +378,6 @@ class $FlashcardsTable extends Flashcards
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _groupIdMeta = const VerificationMeta(
-    'groupId',
-  );
-  @override
-  late final GeneratedColumn<int> groupId = GeneratedColumn<int>(
-    'group_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES card_groups (id) ON DELETE CASCADE',
-    ),
-  );
   @override
   late final GeneratedColumnWithTypeConverter<FlashcardType, int> type =
       GeneratedColumn<int>(
@@ -564,7 +550,6 @@ class $FlashcardsTable extends Flashcards
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    groupId,
     type,
     front,
     back,
@@ -596,14 +581,6 @@ class $FlashcardsTable extends Flashcards
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('group_id')) {
-      context.handle(
-        _groupIdMeta,
-        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_groupIdMeta);
     }
     if (data.containsKey('front')) {
       context.handle(
@@ -721,10 +698,6 @@ class $FlashcardsTable extends Flashcards
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      groupId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}group_id'],
-      )!,
       type: $FlashcardsTable.$convertertype.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
@@ -813,7 +786,6 @@ class $FlashcardsTable extends Flashcards
 
 class Flashcard extends DataClass implements Insertable<Flashcard> {
   final int id;
-  final int groupId;
   final FlashcardType type;
   final String front;
   final String back;
@@ -834,7 +806,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   final int incorrectAnswers;
   const Flashcard({
     required this.id,
-    required this.groupId,
     required this.type,
     required this.front,
     required this.back,
@@ -856,7 +827,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['group_id'] = Variable<int>(groupId);
     {
       map['type'] = Variable<int>($FlashcardsTable.$convertertype.toSql(type));
     }
@@ -895,7 +865,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   FlashcardsCompanion toCompanion(bool nullToAbsent) {
     return FlashcardsCompanion(
       id: Value(id),
-      groupId: Value(groupId),
       type: Value(type),
       front: Value(front),
       back: Value(back),
@@ -928,7 +897,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Flashcard(
       id: serializer.fromJson<int>(json['id']),
-      groupId: serializer.fromJson<int>(json['groupId']),
       type: $FlashcardsTable.$convertertype.fromJson(
         serializer.fromJson<int>(json['type']),
       ),
@@ -958,7 +926,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'groupId': serializer.toJson<int>(groupId),
       'type': serializer.toJson<int>(
         $FlashcardsTable.$convertertype.toJson(type),
       ),
@@ -986,7 +953,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
 
   Flashcard copyWith({
     int? id,
-    int? groupId,
     FlashcardType? type,
     String? front,
     String? back,
@@ -1005,7 +971,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
     int? incorrectAnswers,
   }) => Flashcard(
     id: id ?? this.id,
-    groupId: groupId ?? this.groupId,
     type: type ?? this.type,
     front: front ?? this.front,
     back: back ?? this.back,
@@ -1026,7 +991,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   Flashcard copyWithCompanion(FlashcardsCompanion data) {
     return Flashcard(
       id: data.id.present ? data.id.value : this.id,
-      groupId: data.groupId.present ? data.groupId.value : this.groupId,
       type: data.type.present ? data.type.value : this.type,
       front: data.front.present ? data.front.value : this.front,
       back: data.back.present ? data.back.value : this.back,
@@ -1062,7 +1026,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   String toString() {
     return (StringBuffer('Flashcard(')
           ..write('id: $id, ')
-          ..write('groupId: $groupId, ')
           ..write('type: $type, ')
           ..write('front: $front, ')
           ..write('back: $back, ')
@@ -1086,7 +1049,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
   @override
   int get hashCode => Object.hash(
     id,
-    groupId,
     type,
     front,
     back,
@@ -1109,7 +1071,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
       identical(this, other) ||
       (other is Flashcard &&
           other.id == this.id &&
-          other.groupId == this.groupId &&
           other.type == this.type &&
           other.front == this.front &&
           other.back == this.back &&
@@ -1130,7 +1091,6 @@ class Flashcard extends DataClass implements Insertable<Flashcard> {
 
 class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   final Value<int> id;
-  final Value<int> groupId;
   final Value<FlashcardType> type;
   final Value<String> front;
   final Value<String> back;
@@ -1149,7 +1109,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   final Value<int> incorrectAnswers;
   const FlashcardsCompanion({
     this.id = const Value.absent(),
-    this.groupId = const Value.absent(),
     this.type = const Value.absent(),
     this.front = const Value.absent(),
     this.back = const Value.absent(),
@@ -1169,7 +1128,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   });
   FlashcardsCompanion.insert({
     this.id = const Value.absent(),
-    required int groupId,
     required FlashcardType type,
     required String front,
     required String back,
@@ -1186,8 +1144,7 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
     this.repetitions = const Value.absent(),
     this.correctAnswers = const Value.absent(),
     this.incorrectAnswers = const Value.absent(),
-  }) : groupId = Value(groupId),
-       type = Value(type),
+  }) : type = Value(type),
        front = Value(front),
        back = Value(back),
        difficulty = Value(difficulty),
@@ -1197,7 +1154,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
        nextReviewAt = Value(nextReviewAt);
   static Insertable<Flashcard> custom({
     Expression<int>? id,
-    Expression<int>? groupId,
     Expression<int>? type,
     Expression<String>? front,
     Expression<String>? back,
@@ -1217,7 +1173,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (groupId != null) 'group_id': groupId,
       if (type != null) 'type': type,
       if (front != null) 'front': front,
       if (back != null) 'back': back,
@@ -1239,7 +1194,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
 
   FlashcardsCompanion copyWith({
     Value<int>? id,
-    Value<int>? groupId,
     Value<FlashcardType>? type,
     Value<String>? front,
     Value<String>? back,
@@ -1259,7 +1213,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   }) {
     return FlashcardsCompanion(
       id: id ?? this.id,
-      groupId: groupId ?? this.groupId,
       type: type ?? this.type,
       front: front ?? this.front,
       back: back ?? this.back,
@@ -1284,9 +1237,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (groupId.present) {
-      map['group_id'] = Variable<int>(groupId.value);
     }
     if (type.present) {
       map['type'] = Variable<int>(
@@ -1349,7 +1299,6 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   String toString() {
     return (StringBuffer('FlashcardsCompanion(')
           ..write('id: $id, ')
-          ..write('groupId: $groupId, ')
           ..write('type: $type, ')
           ..write('front: $front, ')
           ..write('back: $back, ')
@@ -1366,6 +1315,230 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
           ..write('repetitions: $repetitions, ')
           ..write('correctAnswers: $correctAnswers, ')
           ..write('incorrectAnswers: $incorrectAnswers')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CardGroupMembershipsTable extends CardGroupMemberships
+    with TableInfo<$CardGroupMembershipsTable, CardGroupMembership> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardGroupMembershipsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _cardIdMeta = const VerificationMeta('cardId');
+  @override
+  late final GeneratedColumn<int> cardId = GeneratedColumn<int>(
+    'card_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES flashcards (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta(
+    'groupId',
+  );
+  @override
+  late final GeneratedColumn<int> groupId = GeneratedColumn<int>(
+    'group_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES card_groups (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [cardId, groupId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'card_group_memberships';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CardGroupMembership> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('card_id')) {
+      context.handle(
+        _cardIdMeta,
+        cardId.isAcceptableOrUnknown(data['card_id']!, _cardIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cardIdMeta);
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_groupIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {cardId, groupId};
+  @override
+  CardGroupMembership map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardGroupMembership(
+      cardId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}card_id'],
+      )!,
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}group_id'],
+      )!,
+    );
+  }
+
+  @override
+  $CardGroupMembershipsTable createAlias(String alias) {
+    return $CardGroupMembershipsTable(attachedDatabase, alias);
+  }
+}
+
+class CardGroupMembership extends DataClass
+    implements Insertable<CardGroupMembership> {
+  final int cardId;
+  final int groupId;
+  const CardGroupMembership({required this.cardId, required this.groupId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['card_id'] = Variable<int>(cardId);
+    map['group_id'] = Variable<int>(groupId);
+    return map;
+  }
+
+  CardGroupMembershipsCompanion toCompanion(bool nullToAbsent) {
+    return CardGroupMembershipsCompanion(
+      cardId: Value(cardId),
+      groupId: Value(groupId),
+    );
+  }
+
+  factory CardGroupMembership.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardGroupMembership(
+      cardId: serializer.fromJson<int>(json['cardId']),
+      groupId: serializer.fromJson<int>(json['groupId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'cardId': serializer.toJson<int>(cardId),
+      'groupId': serializer.toJson<int>(groupId),
+    };
+  }
+
+  CardGroupMembership copyWith({int? cardId, int? groupId}) =>
+      CardGroupMembership(
+        cardId: cardId ?? this.cardId,
+        groupId: groupId ?? this.groupId,
+      );
+  CardGroupMembership copyWithCompanion(CardGroupMembershipsCompanion data) {
+    return CardGroupMembership(
+      cardId: data.cardId.present ? data.cardId.value : this.cardId,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardGroupMembership(')
+          ..write('cardId: $cardId, ')
+          ..write('groupId: $groupId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(cardId, groupId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardGroupMembership &&
+          other.cardId == this.cardId &&
+          other.groupId == this.groupId);
+}
+
+class CardGroupMembershipsCompanion
+    extends UpdateCompanion<CardGroupMembership> {
+  final Value<int> cardId;
+  final Value<int> groupId;
+  final Value<int> rowid;
+  const CardGroupMembershipsCompanion({
+    this.cardId = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CardGroupMembershipsCompanion.insert({
+    required int cardId,
+    required int groupId,
+    this.rowid = const Value.absent(),
+  }) : cardId = Value(cardId),
+       groupId = Value(groupId);
+  static Insertable<CardGroupMembership> custom({
+    Expression<int>? cardId,
+    Expression<int>? groupId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (cardId != null) 'card_id': cardId,
+      if (groupId != null) 'group_id': groupId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CardGroupMembershipsCompanion copyWith({
+    Value<int>? cardId,
+    Value<int>? groupId,
+    Value<int>? rowid,
+  }) {
+    return CardGroupMembershipsCompanion(
+      cardId: cardId ?? this.cardId,
+      groupId: groupId ?? this.groupId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (cardId.present) {
+      map['card_id'] = Variable<int>(cardId.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<int>(groupId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardGroupMembershipsCompanion(')
+          ..write('cardId: $cardId, ')
+          ..write('groupId: $groupId, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2260,15 +2433,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CardGroupsTable cardGroups = $CardGroupsTable(this);
   late final $FlashcardsTable flashcards = $FlashcardsTable(this);
+  late final $CardGroupMembershipsTable cardGroupMemberships =
+      $CardGroupMembershipsTable(this);
   late final $ReviewsTable reviews = $ReviewsTable(this);
   late final $CardErrorsTable cardErrors = $CardErrorsTable(this);
   late final Index idxFlashcardsNextReview = Index(
     'idx_flashcards_next_review',
     'CREATE INDEX idx_flashcards_next_review ON flashcards (next_review_at)',
   );
-  late final Index idxFlashcardsGroup = Index(
-    'idx_flashcards_group',
-    'CREATE INDEX idx_flashcards_group ON flashcards (group_id)',
+  late final Index idxCardGroupMembershipsGroup = Index(
+    'idx_card_group_memberships_group',
+    'CREATE INDEX idx_card_group_memberships_group ON card_group_memberships (group_id)',
   );
   late final Index idxReviewsCard = Index(
     'idx_reviews_card',
@@ -2285,10 +2460,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     cardGroups,
     flashcards,
+    cardGroupMemberships,
     reviews,
     cardErrors,
     idxFlashcardsNextReview,
-    idxFlashcardsGroup,
+    idxCardGroupMembershipsGroup,
     idxReviewsCard,
     idxCardErrorsCard,
   ];
@@ -2296,10 +2472,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
     WritePropagation(
       on: TableUpdateQuery.onTableName(
+        'flashcards',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('card_group_memberships', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
         'card_groups',
         limitUpdateKind: UpdateKind.delete,
       ),
-      result: [TableUpdate('flashcards', kind: UpdateKind.delete)],
+      result: [TableUpdate('card_group_memberships', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -2337,19 +2520,26 @@ final class $$CardGroupsTableReferences
     extends BaseReferences<_$AppDatabase, $CardGroupsTable, CardGroup> {
   $$CardGroupsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$FlashcardsTable, List<Flashcard>>
-  _flashcardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.flashcards,
-    aliasName: 'card_groups__id__flashcards__group_id',
-  );
+  static MultiTypedResultKey<
+    $CardGroupMembershipsTable,
+    List<CardGroupMembership>
+  >
+  _cardGroupMembershipsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.cardGroupMemberships,
+        aliasName: 'card_groups__id__card_group_memberships__group_id',
+      );
 
-  $$FlashcardsTableProcessedTableManager get flashcardsRefs {
-    final manager = $$FlashcardsTableTableManager(
+  $$CardGroupMembershipsTableProcessedTableManager
+  get cardGroupMembershipsRefs {
+    final manager = $$CardGroupMembershipsTableTableManager(
       $_db,
-      $_db.flashcards,
+      $_db.cardGroupMemberships,
     ).filter((f) => f.groupId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_flashcardsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(
+      _cardGroupMembershipsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2390,22 +2580,22 @@ class $$CardGroupsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> flashcardsRefs(
-    Expression<bool> Function($$FlashcardsTableFilterComposer f) f,
+  Expression<bool> cardGroupMembershipsRefs(
+    Expression<bool> Function($$CardGroupMembershipsTableFilterComposer f) f,
   ) {
-    final $$FlashcardsTableFilterComposer composer = $composerBuilder(
+    final $$CardGroupMembershipsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.flashcards,
+      referencedTable: $db.cardGroupMemberships,
       getReferencedColumn: (t) => t.groupId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$FlashcardsTableFilterComposer(
+          }) => $$CardGroupMembershipsTableFilterComposer(
             $db: $db,
-            $table: $db.flashcards,
+            $table: $db.cardGroupMemberships,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2477,28 +2667,29 @@ class $$CardGroupsTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  Expression<T> flashcardsRefs<T extends Object>(
-    Expression<T> Function($$FlashcardsTableAnnotationComposer a) f,
+  Expression<T> cardGroupMembershipsRefs<T extends Object>(
+    Expression<T> Function($$CardGroupMembershipsTableAnnotationComposer a) f,
   ) {
-    final $$FlashcardsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.flashcards,
-      getReferencedColumn: (t) => t.groupId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FlashcardsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.flashcards,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$CardGroupMembershipsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.cardGroupMemberships,
+          getReferencedColumn: (t) => t.groupId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$CardGroupMembershipsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.cardGroupMemberships,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -2516,7 +2707,7 @@ class $$CardGroupsTableTableManager
           $$CardGroupsTableUpdateCompanionBuilder,
           (CardGroup, $$CardGroupsTableReferences),
           CardGroup,
-          PrefetchHooks Function({bool flashcardsRefs})
+          PrefetchHooks Function({bool cardGroupMembershipsRefs})
         > {
   $$CardGroupsTableTableManager(_$AppDatabase db, $CardGroupsTable table)
     : super(
@@ -2565,28 +2756,30 @@ class $$CardGroupsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({flashcardsRefs = false}) {
+          prefetchHooksCallback: ({cardGroupMembershipsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (flashcardsRefs) db.flashcards],
+              explicitlyWatchedTables: [
+                if (cardGroupMembershipsRefs) db.cardGroupMemberships,
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (flashcardsRefs)
+                  if (cardGroupMembershipsRefs)
                     await $_getPrefetchedData<
                       CardGroup,
                       $CardGroupsTable,
-                      Flashcard
+                      CardGroupMembership
                     >(
                       currentTable: table,
                       referencedTable: $$CardGroupsTableReferences
-                          ._flashcardsRefsTable(db),
+                          ._cardGroupMembershipsRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$CardGroupsTableReferences(
                             db,
                             table,
                             p0,
-                          ).flashcardsRefs,
+                          ).cardGroupMembershipsRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.groupId == item.id),
                       typedResults: items,
@@ -2611,11 +2804,10 @@ typedef $$CardGroupsTableProcessedTableManager =
       $$CardGroupsTableUpdateCompanionBuilder,
       (CardGroup, $$CardGroupsTableReferences),
       CardGroup,
-      PrefetchHooks Function({bool flashcardsRefs})
+      PrefetchHooks Function({bool cardGroupMembershipsRefs})
     >;
 typedef $$FlashcardsTableCreateCompanionBuilder = FlashcardsCompanion Function({
   Value<int> id,
-  required int groupId,
   required FlashcardType type,
   required String front,
   required String back,
@@ -2635,7 +2827,6 @@ typedef $$FlashcardsTableCreateCompanionBuilder = FlashcardsCompanion Function({
 });
 typedef $$FlashcardsTableUpdateCompanionBuilder = FlashcardsCompanion Function({
   Value<int> id,
-  Value<int> groupId,
   Value<FlashcardType> type,
   Value<String> front,
   Value<String> back,
@@ -2658,20 +2849,28 @@ final class $$FlashcardsTableReferences
     extends BaseReferences<_$AppDatabase, $FlashcardsTable, Flashcard> {
   $$FlashcardsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $CardGroupsTable _groupIdTable(_$AppDatabase db) =>
-      db.cardGroups.createAlias('flashcards__group_id__card_groups__id');
+  static MultiTypedResultKey<
+    $CardGroupMembershipsTable,
+    List<CardGroupMembership>
+  >
+  _cardGroupMembershipsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.cardGroupMemberships,
+        aliasName: 'flashcards__id__card_group_memberships__card_id',
+      );
 
-  $$CardGroupsTableProcessedTableManager get groupId {
-    final $_column = $_itemColumn<int>('group_id')!;
-
-    final manager = $$CardGroupsTableTableManager(
+  $$CardGroupMembershipsTableProcessedTableManager
+  get cardGroupMembershipsRefs {
+    final manager = $$CardGroupMembershipsTableTableManager(
       $_db,
-      $_db.cardGroups,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_groupIdTable($_db));
-    if (item == null) return manager;
+      $_db.cardGroupMemberships,
+    ).filter((f) => f.cardId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _cardGroupMembershipsRefsTable($_db),
+    );
     return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -2810,27 +3009,29 @@ class $$FlashcardsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$CardGroupsTableFilterComposer get groupId {
-    final $$CardGroupsTableFilterComposer composer = $composerBuilder(
+  Expression<bool> cardGroupMembershipsRefs(
+    Expression<bool> Function($$CardGroupMembershipsTableFilterComposer f) f,
+  ) {
+    final $$CardGroupMembershipsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.groupId,
-      referencedTable: $db.cardGroups,
-      getReferencedColumn: (t) => t.id,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.cardGroupMemberships,
+      getReferencedColumn: (t) => t.cardId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CardGroupsTableFilterComposer(
+          }) => $$CardGroupMembershipsTableFilterComposer(
             $db: $db,
-            $table: $db.cardGroups,
+            $table: $db.cardGroupMemberships,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return composer;
+    return f(composer);
   }
 
   Expression<bool> reviewsRefs(
@@ -2977,29 +3178,6 @@ class $$FlashcardsTableOrderingComposer
     column: $table.incorrectAnswers,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$CardGroupsTableOrderingComposer get groupId {
-    final $$CardGroupsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.groupId,
-      referencedTable: $db.cardGroups,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CardGroupsTableOrderingComposer(
-            $db: $db,
-            $table: $db.cardGroups,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$FlashcardsTableAnnotationComposer
@@ -3075,27 +3253,30 @@ class $$FlashcardsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$CardGroupsTableAnnotationComposer get groupId {
-    final $$CardGroupsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.groupId,
-      referencedTable: $db.cardGroups,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CardGroupsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.cardGroups,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  Expression<T> cardGroupMembershipsRefs<T extends Object>(
+    Expression<T> Function($$CardGroupMembershipsTableAnnotationComposer a) f,
+  ) {
+    final $$CardGroupMembershipsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.cardGroupMemberships,
+          getReferencedColumn: (t) => t.cardId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
+              }) => $$CardGroupMembershipsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.cardGroupMemberships,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
   }
 
   Expression<T> reviewsRefs<T extends Object>(
@@ -3163,7 +3344,7 @@ class $$FlashcardsTableTableManager
           (Flashcard, $$FlashcardsTableReferences),
           Flashcard,
           PrefetchHooks Function({
-            bool groupId,
+            bool cardGroupMembershipsRefs,
             bool reviewsRefs,
             bool cardErrorsRefs,
           })
@@ -3182,7 +3363,6 @@ class $$FlashcardsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> groupId = const Value.absent(),
                 Value<FlashcardType> type = const Value.absent(),
                 Value<String> front = const Value.absent(),
                 Value<String> back = const Value.absent(),
@@ -3201,7 +3381,6 @@ class $$FlashcardsTableTableManager
                 Value<int> incorrectAnswers = const Value.absent(),
               }) => FlashcardsCompanion(
                 id: id,
-                groupId: groupId,
                 type: type,
                 front: front,
                 back: back,
@@ -3222,7 +3401,6 @@ class $$FlashcardsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int groupId,
                 required FlashcardType type,
                 required String front,
                 required String back,
@@ -3241,7 +3419,6 @@ class $$FlashcardsTableTableManager
                 Value<int> incorrectAnswers = const Value.absent(),
               }) => FlashcardsCompanion.insert(
                 id: id,
-                groupId: groupId,
                 type: type,
                 front: front,
                 back: back,
@@ -3268,45 +3445,42 @@ class $$FlashcardsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({groupId = false, reviewsRefs = false, cardErrorsRefs = false}) {
+              ({
+                cardGroupMembershipsRefs = false,
+                reviewsRefs = false,
+                cardErrorsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (cardGroupMembershipsRefs) db.cardGroupMemberships,
                     if (reviewsRefs) db.reviews,
                     if (cardErrorsRefs) db.cardErrors,
                   ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (groupId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.groupId,
-                            referencedTable: $$FlashcardsTableReferences
-                                ._groupIdTable(db),
-                            referencedColumn: $$FlashcardsTableReferences
-                                ._groupIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
+                  addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (cardGroupMembershipsRefs)
+                        await $_getPrefetchedData<
+                          Flashcard,
+                          $FlashcardsTable,
+                          CardGroupMembership
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FlashcardsTableReferences
+                              ._cardGroupMembershipsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FlashcardsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).cardGroupMembershipsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.cardId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (reviewsRefs)
                         await $_getPrefetchedData<
                           Flashcard,
@@ -3370,10 +3544,371 @@ typedef $$FlashcardsTableProcessedTableManager =
       (Flashcard, $$FlashcardsTableReferences),
       Flashcard,
       PrefetchHooks Function({
-        bool groupId,
+        bool cardGroupMembershipsRefs,
         bool reviewsRefs,
         bool cardErrorsRefs,
       })
+    >;
+typedef $$CardGroupMembershipsTableCreateCompanionBuilder =
+    CardGroupMembershipsCompanion Function({
+      required int cardId,
+      required int groupId,
+      Value<int> rowid,
+    });
+typedef $$CardGroupMembershipsTableUpdateCompanionBuilder =
+    CardGroupMembershipsCompanion Function({
+      Value<int> cardId,
+      Value<int> groupId,
+      Value<int> rowid,
+    });
+
+final class $$CardGroupMembershipsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CardGroupMembershipsTable,
+          CardGroupMembership
+        > {
+  $$CardGroupMembershipsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FlashcardsTable _cardIdTable(_$AppDatabase db) => db.flashcards
+      .createAlias('card_group_memberships__card_id__flashcards__id');
+
+  $$FlashcardsTableProcessedTableManager get cardId {
+    final $_column = $_itemColumn<int>('card_id')!;
+
+    final manager = $$FlashcardsTableTableManager(
+      $_db,
+      $_db.flashcards,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cardIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CardGroupsTable _groupIdTable(_$AppDatabase db) => db.cardGroups
+      .createAlias('card_group_memberships__group_id__card_groups__id');
+
+  $$CardGroupsTableProcessedTableManager get groupId {
+    final $_column = $_itemColumn<int>('group_id')!;
+
+    final manager = $$CardGroupsTableTableManager(
+      $_db,
+      $_db.cardGroups,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_groupIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CardGroupMembershipsTableFilterComposer
+    extends Composer<_$AppDatabase, $CardGroupMembershipsTable> {
+  $$CardGroupMembershipsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FlashcardsTableFilterComposer get cardId {
+    final $$FlashcardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cardId,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableFilterComposer(
+            $db: $db,
+            $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CardGroupsTableFilterComposer get groupId {
+    final $$CardGroupsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.cardGroups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CardGroupsTableFilterComposer(
+            $db: $db,
+            $table: $db.cardGroups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CardGroupMembershipsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardGroupMembershipsTable> {
+  $$CardGroupMembershipsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FlashcardsTableOrderingComposer get cardId {
+    final $$FlashcardsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cardId,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableOrderingComposer(
+            $db: $db,
+            $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CardGroupsTableOrderingComposer get groupId {
+    final $$CardGroupsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.cardGroups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CardGroupsTableOrderingComposer(
+            $db: $db,
+            $table: $db.cardGroups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CardGroupMembershipsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardGroupMembershipsTable> {
+  $$CardGroupMembershipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FlashcardsTableAnnotationComposer get cardId {
+    final $$FlashcardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cardId,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CardGroupsTableAnnotationComposer get groupId {
+    final $$CardGroupsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.cardGroups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CardGroupsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.cardGroups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CardGroupMembershipsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CardGroupMembershipsTable,
+          CardGroupMembership,
+          $$CardGroupMembershipsTableFilterComposer,
+          $$CardGroupMembershipsTableOrderingComposer,
+          $$CardGroupMembershipsTableAnnotationComposer,
+          $$CardGroupMembershipsTableCreateCompanionBuilder,
+          $$CardGroupMembershipsTableUpdateCompanionBuilder,
+          (CardGroupMembership, $$CardGroupMembershipsTableReferences),
+          CardGroupMembership,
+          PrefetchHooks Function({bool cardId, bool groupId})
+        > {
+  $$CardGroupMembershipsTableTableManager(
+    _$AppDatabase db,
+    $CardGroupMembershipsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardGroupMembershipsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardGroupMembershipsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CardGroupMembershipsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> cardId = const Value.absent(),
+                Value<int> groupId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CardGroupMembershipsCompanion(
+                cardId: cardId,
+                groupId: groupId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int cardId,
+                required int groupId,
+                Value<int> rowid = const Value.absent(),
+              }) => CardGroupMembershipsCompanion.insert(
+                cardId: cardId,
+                groupId: groupId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CardGroupMembershipsTable, CardGroupMembership>(
+                    table,
+                  ),
+                  $$CardGroupMembershipsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({cardId = false, groupId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (cardId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.cardId,
+                        referencedTable: $$CardGroupMembershipsTableReferences
+                            ._cardIdTable(db),
+                        referencedColumn: $$CardGroupMembershipsTableReferences
+                            ._cardIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (groupId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.groupId,
+                        referencedTable: $$CardGroupMembershipsTableReferences
+                            ._groupIdTable(db),
+                        referencedColumn: $$CardGroupMembershipsTableReferences
+                            ._groupIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CardGroupMembershipsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CardGroupMembershipsTable,
+      CardGroupMembership,
+      $$CardGroupMembershipsTableFilterComposer,
+      $$CardGroupMembershipsTableOrderingComposer,
+      $$CardGroupMembershipsTableAnnotationComposer,
+      $$CardGroupMembershipsTableCreateCompanionBuilder,
+      $$CardGroupMembershipsTableUpdateCompanionBuilder,
+      (CardGroupMembership, $$CardGroupMembershipsTableReferences),
+      CardGroupMembership,
+      PrefetchHooks Function({bool cardId, bool groupId})
     >;
 typedef $$ReviewsTableCreateCompanionBuilder = ReviewsCompanion Function({
   Value<int> id,
@@ -4070,6 +4605,8 @@ class $AppDatabaseManager {
       $$CardGroupsTableTableManager(_db, _db.cardGroups);
   $$FlashcardsTableTableManager get flashcards =>
       $$FlashcardsTableTableManager(_db, _db.flashcards);
+  $$CardGroupMembershipsTableTableManager get cardGroupMemberships =>
+      $$CardGroupMembershipsTableTableManager(_db, _db.cardGroupMemberships);
   $$ReviewsTableTableManager get reviews =>
       $$ReviewsTableTableManager(_db, _db.reviews);
   $$CardErrorsTableTableManager get cardErrors =>

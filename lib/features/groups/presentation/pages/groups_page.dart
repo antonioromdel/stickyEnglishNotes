@@ -17,7 +17,7 @@ class GroupsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groups = ref.watch(cardGroupsProvider);
-    final cards = ref.watch(flashcardsProvider);
+    final memberships = ref.watch(cardGroupMembershipsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Grupos')),
@@ -45,14 +45,9 @@ class GroupsPage extends ConsumerWidget {
             );
           }
 
-          final counts = <int, int>{};
-          cards.maybeWhen(
-            data: (allCards) {
-              for (final card in allCards) {
-                counts[card.groupId] = (counts[card.groupId] ?? 0) + 1;
-              }
-            },
-            orElse: () {},
+          final counts = memberships.maybeWhen(
+            data: cardCountByGroup,
+            orElse: () => const <int, int>{},
           );
 
           return GridView.builder(

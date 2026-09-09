@@ -33,6 +33,11 @@ void main() {
               testFlashcard(front: 'because', back: 'porque'),
             ]),
           ),
+          cardGroupMembershipsProvider.overrideWith(
+            (ref) => Stream.value([
+              testMembership(cardId: 1, groupId: 1),
+            ]),
+          ),
         ],
         child: MaterialApp(
           theme: AppTheme.light,
@@ -65,8 +70,14 @@ void main() {
           ),
           flashcardsProvider.overrideWith(
             (ref) => Stream.value([
-              testFlashcard(id: 1, groupId: 1, front: 'hello', back: 'hola'),
-              testFlashcard(id: 2, groupId: 2, front: 'run', back: 'correr'),
+              testFlashcard(id: 1, front: 'hello', back: 'hola'),
+              testFlashcard(id: 2, front: 'run', back: 'correr'),
+            ]),
+          ),
+          cardGroupMembershipsProvider.overrideWith(
+            (ref) => Stream.value([
+              testMembership(cardId: 1, groupId: 1),
+              testMembership(cardId: 2, groupId: 2),
             ]),
           ),
         ],

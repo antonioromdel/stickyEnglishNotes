@@ -1,22 +1,18 @@
 import 'package:drift/drift.dart';
 
 import '../../models/card_enums.dart';
-import 'card_groups_table.dart';
 
 /// Tabla de flashcards.
 ///
 /// Se llama [Flashcards] (y no Cards) para no chocar con el widget
 /// [Card] de Flutter. [interval] se guarda en minutos.
+///
+/// Una tarjeta puede pertenecer a varios grupos mediante
+/// [CardGroupMemberships].
 @TableIndex(name: 'idx_flashcards_next_review', columns: {#nextReviewAt})
-@TableIndex(name: 'idx_flashcards_group', columns: {#groupId})
 @DataClassName('Flashcard')
 class Flashcards extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get groupId => integer().references(
-        CardGroups,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
   IntColumn get type => intEnum<FlashcardType>()();
   TextColumn get front => text()();
   TextColumn get back => text()();

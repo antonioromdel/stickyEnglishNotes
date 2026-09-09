@@ -78,7 +78,7 @@ Future<bool> deleteGroup(
     context: context,
     title: 'Eliminar ${group.name}',
     message:
-        'Las tarjetas de este grupo se moverán a ${CardGroupsRepository.defaultName}.',
+        'Si una tarjeta solo está en este grupo, pasará a ${CardGroupsRepository.defaultName}. Si está en más grupos, se quedará en ellos.',
   );
   if (!confirmed) return false;
 

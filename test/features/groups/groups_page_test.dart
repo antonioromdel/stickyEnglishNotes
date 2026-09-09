@@ -48,6 +48,11 @@ void main() {
               testFlashcard(front: 'hello', back: 'hola'),
             ]),
           ),
+          cardGroupMembershipsProvider.overrideWith(
+            (ref) => Stream.value([
+              testMembership(cardId: 1, groupId: 1),
+            ]),
+          ),
         ],
         child: MaterialApp.router(
           theme: AppTheme.light,
@@ -77,6 +82,7 @@ void main() {
             (ref) => Stream.value([testGroup()]),
           ),
           flashcardsProvider.overrideWith((ref) => Stream.value([])),
+          cardGroupMembershipsProvider.overrideWith((ref) => Stream.value([])),
         ],
         child: MaterialApp(
           theme: AppTheme.light,

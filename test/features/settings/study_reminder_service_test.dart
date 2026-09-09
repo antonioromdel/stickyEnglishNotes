@@ -92,4 +92,14 @@ void main() {
     expect(scheduler.lastScheduled?.hour, 19);
     expect(scheduler.lastScheduled?.weekdays, {1, 3, 5});
   });
+
+  test('guardar ajustes no falla si programar lanza', () async {
+    scheduler = FakeStudyReminderScheduler(throwOnSchedule: true);
+    service = StudyReminderService(preferences, scheduler, permissions);
+
+    final settings = await service.setEnabled(true);
+
+    expect(settings.enabled, isTrue);
+    expect(preferences.getBool('notification_reminder_enabled'), isTrue);
+  });
 }

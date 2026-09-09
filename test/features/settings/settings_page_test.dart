@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,6 +136,65 @@ void main() {
         ).value,
         isTrue,
       );
+    },
+  );
+
+  testWidgets(
+    'al cambiar días u hora actualiza la pantalla sin esperar a programar',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = await SharedPreferences.getInstance();
+      final scheduleGate = Completer<void>();
+      addTearDown(() {
+        if (!scheduleGate.isCompleted) scheduleGate.complete();
+      });
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) => preferences),
+          studyReminderSchedulerProvider.overrideWith(
+            (ref) => FakeStudyReminderScheduler(scheduleGate: scheduleGate),
+          ),
+          notificationPermissionClientProvider.overrideWith(
+            (ref) => FakeNotificationPermissionClient(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.light,
+            home: const SettingsPage(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('notifications-enabled-switch')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('L'), findsOneWidget);
+      expect(find.text('09:00'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('notification-day-7')));
+      await tester.pump();
+      expect(
+        container.read(notificationSettingsProvider).weekdays.contains(7),
+        isFalse,
+      );
+
+      container.read(notificationSettingsProvider.notifier).setTime(
+            hour: 18,
+            minute: 45,
+          );
+      await tester.pump();
+      expect(find.text('18:45'), findsOneWidget);
+
+      scheduleGate.complete();
+      await tester.pump();
     },
   );
 }

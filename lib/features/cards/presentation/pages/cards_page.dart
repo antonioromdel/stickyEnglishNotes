@@ -43,7 +43,15 @@ class CardsPage extends ConsumerWidget {
             data: (value) => value,
             orElse: () => const <CardGroup>[],
           );
-          final visible = filterFlashcardsByGroup(items, selectedGroupId);
+          final memberships = ref.watch(cardGroupMembershipsProvider).maybeWhen(
+                data: (value) => value,
+                orElse: () => const <CardGroupMembership>[],
+              );
+          final visible = filterFlashcardsByGroup(
+            items,
+            selectedGroupId,
+            groupIdsByCard(memberships),
+          );
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

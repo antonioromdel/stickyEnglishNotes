@@ -21,17 +21,15 @@ class FlashcardsRepository {
   }
 
   Future<List<Flashcard>> getByGroup(int groupId) {
-    return (_db.select(_db.flashcards)
-          ..where((table) => table.groupId.equals(groupId))
-          ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]))
-        .get();
+    final query = _cardsInGroup(groupId)
+      ..orderBy([OrderingTerm.desc(_db.flashcards.createdAt)]);
+    return query.get().then(_readCards);
   }
 
   Stream<List<Flashcard>> watchByGroup(int groupId) {
-    return (_db.select(_db.flashcards)
-          ..where((table) => table.groupId.equals(groupId))
-          ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]))
-        .watch();
+    final query = _cardsInGroup(groupId)
+      ..orderBy([OrderingTerm.desc(_db.flashcards.createdAt)]);
+    return query.watch().map(_readCards);
   }
 
   Future<Flashcard?> getById(int id) {
@@ -53,28 +51,47 @@ class FlashcardsRepository {
     ];
   }
 
-  /// Tarjetas pendientes: [Flashcard.nextReviewAt] <= [now].
-  Future<List<Flashcard>> getDue({required DateTime now, int? groupId}) {
-    return (_db.select(_db.flashcards)
-          ..where((table) {
-            final due = table.nextReviewAt.isSmallerOrEqualValue(now);
-            if (groupId == null) return due;
-            return due & table.groupId.equals(groupId);
-          })
-          ..orderBy([(table) => OrderingTerm.asc(table.nextReviewAt)]))
+  Stream<List<CardGroupMembership>> watchMemberships() {
+    return _db.select(_db.cardGroupMemberships).watch();
+  }
+
+  Future<Set<int>> getGroupIds(int cardId) async {
+    final rows = await (_db.select(_db.cardGroupMemberships)
+          ..where((table) => table.cardId.equals(cardId)))
         .get();
+    return {for (final row in rows) row.groupId};
+  }
+
+  /// Tarjetas pendientes: [Flashcard.nextReviewAt] <= [now].
+  Future<List<Flashcard>> getDue({required DateTime now, int? groupId}) async {
+    if (groupId == null) {
+      return (_db.select(_db.flashcards)
+            ..where((table) => table.nextReviewAt.isSmallerOrEqualValue(now))
+            ..orderBy([(table) => OrderingTerm.asc(table.nextReviewAt)]))
+          .get();
+    }
+
+    final query = _cardsInGroup(groupId)
+      ..where(_db.flashcards.nextReviewAt.isSmallerOrEqualValue(now))
+      ..orderBy([OrderingTerm.asc(_db.flashcards.nextReviewAt)]);
+    return _readCards(await query.get());
   }
 
   /// Observa las pendientes evaluando [DateTime.now] en cada emisión,
   /// para incluir tarjetas creadas después de suscribirse.
   Stream<List<Flashcard>> watchDue({int? groupId}) {
-    final query = _db.select(_db.flashcards)
-      ..orderBy([(table) => OrderingTerm.asc(table.nextReviewAt)]);
-    if (groupId != null) {
-      query.where((table) => table.groupId.equals(groupId));
+    final Stream<List<Flashcard>> source;
+    if (groupId == null) {
+      source = (_db.select(_db.flashcards)
+            ..orderBy([(table) => OrderingTerm.asc(table.nextReviewAt)]))
+          .watch();
+    } else {
+      final query = _cardsInGroup(groupId)
+        ..orderBy([OrderingTerm.asc(_db.flashcards.nextReviewAt)]);
+      source = query.watch().map(_readCards);
     }
 
-    return query.watch().map((cards) {
+    return source.map((cards) {
       final now = DateTime.now();
       return [
         for (final card in cards)
@@ -88,7 +105,7 @@ class FlashcardsRepository {
   }
 
   Future<Flashcard> create({
-    required int groupId,
+    required Set<int> groupIds,
     required String front,
     required String back,
     FlashcardType type = FlashcardType.word,
@@ -98,25 +115,27 @@ class FlashcardsRepository {
     String tags = '',
     CardSource source = CardSource.manual,
     DateTime? now,
-  }) async {
-    final timestamp = now ?? DateTime.now();
-    final id = await _db.into(_db.flashcards).insert(
-      FlashcardsCompanion.insert(
-        groupId: groupId,
-        type: type,
-        front: front,
-        back: back,
-        example: Value(example),
-        audioPath: Value(audioPath),
-        difficulty: difficulty,
-        tags: Value(tags),
-        source: source,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        nextReviewAt: timestamp,
-      ),
-    );
-    return (await getById(id))!;
+  }) {
+    return _db.transaction(() async {
+      final timestamp = now ?? DateTime.now();
+      final id = await _db.into(_db.flashcards).insert(
+        FlashcardsCompanion.insert(
+          type: type,
+          front: front,
+          back: back,
+          example: Value(example),
+          audioPath: Value(audioPath),
+          difficulty: difficulty,
+          tags: Value(tags),
+          source: source,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          nextReviewAt: timestamp,
+        ),
+      );
+      await _replaceMemberships(id, groupIds);
+      return (await getById(id))!;
+    });
   }
 
   Future<void> updateCard(FlashcardsCompanion companion) {
@@ -127,24 +146,26 @@ class FlashcardsRepository {
 
   Future<Flashcard> updateDetails({
     required int id,
-    required int groupId,
+    required Set<int> groupIds,
     required String front,
     required String back,
     String? example,
     required FlashcardType type,
-  }) async {
-    await (_db.update(_db.flashcards)..where((table) => table.id.equals(id)))
-        .write(
-      FlashcardsCompanion(
-        groupId: Value(groupId),
-        front: Value(front),
-        back: Value(back),
-        example: Value(example),
-        type: Value(type),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    return (await getById(id))!;
+  }) {
+    return _db.transaction(() async {
+      await (_db.update(_db.flashcards)..where((table) => table.id.equals(id)))
+          .write(
+        FlashcardsCompanion(
+          front: Value(front),
+          back: Value(back),
+          example: Value(example),
+          type: Value(type),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await _replaceMemberships(id, groupIds);
+      return (await getById(id))!;
+    });
   }
 
   Future<void> updateAfterReview({
@@ -170,9 +191,41 @@ class FlashcardsRepository {
     );
   }
 
-  /// Elimina la tarjeta y, en cascada, sus reviews y errores.
+  /// Elimina la tarjeta y, en cascada, sus reviews, errores y pertenencias.
   Future<void> delete(int id) {
     return (_db.delete(_db.flashcards)..where((table) => table.id.equals(id)))
         .go();
+  }
+
+  JoinedSelectStatement _cardsInGroup(int groupId) {
+    return _db.select(_db.flashcards).join([
+      innerJoin(
+        _db.cardGroupMemberships,
+        _db.cardGroupMemberships.cardId.equalsExp(_db.flashcards.id),
+      ),
+    ])..where(_db.cardGroupMemberships.groupId.equals(groupId));
+  }
+
+  List<Flashcard> _readCards(List<TypedResult> rows) {
+    return [for (final row in rows) row.readTable(_db.flashcards)];
+  }
+
+  Future<void> _replaceMemberships(int cardId, Set<int> groupIds) async {
+    if (groupIds.isEmpty) {
+      throw ArgumentError('La tarjeta debe pertenecer a un grupo.');
+    }
+
+    await (_db.delete(_db.cardGroupMemberships)
+          ..where((table) => table.cardId.equals(cardId)))
+        .go();
+
+    for (final groupId in groupIds) {
+      await _db.into(_db.cardGroupMemberships).insert(
+            CardGroupMembershipsCompanion.insert(
+              cardId: cardId,
+              groupId: groupId,
+            ),
+          );
+    }
   }
 }

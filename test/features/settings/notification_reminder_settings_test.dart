@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stickeenglishnotes/features/settings/application/study_reminder_scheduler.dart';
 import 'package:stickeenglishnotes/features/settings/domain/notification_reminder_settings.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
 void main() {
   test('formatea la hora en 24 horas', () {
@@ -47,5 +50,12 @@ void main() {
       ),
       DateTime(2026, 9, 14, 9),
     );
+  });
+
+  test('conserva el instante local al convertir la hora del aviso', () {
+    tzdata.initializeTimeZones();
+    tz.setLocalLocation(tz.UTC);
+    final local = DateTime(2026, 9, 10, 9, 30);
+    expect(reminderDateTime(local).toUtc(), local.toUtc());
   });
 }

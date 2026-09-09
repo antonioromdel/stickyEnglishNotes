@@ -58,13 +58,13 @@ void main() {
     final now = DateTime.utc(2026, 9, 6, 12);
 
     final dueCard = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'apple',
       back: 'manzana',
       now: now.subtract(const Duration(hours: 1)),
     );
     final futureCard = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'later',
       back: 'después',
       now: now.add(const Duration(days: 2)),
@@ -87,7 +87,7 @@ void main() {
     expect(counts.last, 0);
 
     await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'hello',
       back: 'hola',
     );
@@ -103,13 +103,13 @@ void main() {
     final now = DateTime.utc(2026, 9, 6, 12);
 
     await flashcards.create(
-      groupId: general.id,
+      groupIds: {general.id},
       front: 'hello',
       back: 'hola',
       now: now,
     );
     final verbCard = await flashcards.create(
-      groupId: verbs.id,
+      groupIds: {verbs.id},
       front: 'run',
       back: 'correr',
       now: now,
@@ -125,7 +125,7 @@ void main() {
     final general = (await groups.getAll()).first;
     final group = await groups.create(name: 'Temporal');
     final card = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'talk',
       back: 'hablar',
     );
@@ -146,10 +146,25 @@ void main() {
     await groups.delete(group.id);
 
     expect(await groups.getById(group.id), isNull);
-    final moved = await flashcards.getById(card.id);
-    expect(moved?.groupId, general.id);
+    expect(await flashcards.getById(card.id), isNotNull);
+    expect(await flashcards.getGroupIds(card.id), {general.id});
     expect(await reviews.getByCard(card.id), hasLength(1));
     expect(await errors.getByCard(card.id), hasLength(1));
+  });
+
+  test('al borrar un grupo mantiene la tarjeta en los demás', () async {
+    final general = (await groups.getAll()).first;
+    final verbs = await groups.create(name: 'Verbos');
+    final card = await flashcards.create(
+      groupIds: {general.id, verbs.id},
+      front: 'run',
+      back: 'correr',
+    );
+
+    await groups.delete(verbs.id);
+
+    expect(await flashcards.getGroupIds(card.id), {general.id});
+    expect(await flashcards.getByGroup(general.id), isNotEmpty);
   });
 
   test('no permite eliminar el grupo General', () async {
@@ -162,7 +177,7 @@ void main() {
   test('registra reviews y errores de una tarjeta', () async {
     final group = (await groups.getAll()).first;
     final card = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'because',
       back: 'porque',
     );
@@ -193,7 +208,7 @@ void main() {
   test('watchAllWithCards une cada error con su tarjeta', () async {
     final group = (await groups.getAll()).first;
     final card = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'hello',
       back: 'hola',
     );
@@ -214,7 +229,7 @@ void main() {
     final group = (await groups.getAll()).first;
     final now = DateTime.utc(2026, 9, 6, 12);
     final card = await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'apple',
       back: 'manzana',
       now: now,

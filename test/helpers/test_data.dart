@@ -5,14 +5,12 @@ final _now = DateTime(2026, 9, 6, 12);
 
 Flashcard testFlashcard({
   int id = 1,
-  int groupId = 1,
   String front = 'hello',
   String back = 'hola',
   String? example,
 }) {
   return Flashcard(
     id: id,
-    groupId: groupId,
     type: FlashcardType.word,
     front: front,
     back: back,
@@ -28,6 +26,13 @@ Flashcard testFlashcard({
     correctAnswers: 0,
     incorrectAnswers: 0,
   );
+}
+
+CardGroupMembership testMembership({
+  int cardId = 1,
+  int groupId = 1,
+}) {
+  return CardGroupMembership(cardId: cardId, groupId: groupId);
 }
 
 Review testReview({

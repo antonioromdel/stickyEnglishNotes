@@ -75,7 +75,7 @@ class CardGroupsRepository {
     );
   }
 
-  /// Elimina el grupo y mueve sus tarjetas al grupo General.
+  /// Elimina el grupo. Las tarjetas que solo estaban en él pasan a General.
   ///
   /// El grupo General no se puede eliminar.
   Future<void> delete(int id) {
@@ -87,14 +87,28 @@ class CardGroupsRepository {
       }
 
       final general = await getOrCreateDefault();
-      await (_db.update(_db.flashcards)
+      final memberships = await (_db.select(_db.cardGroupMemberships)
             ..where((table) => table.groupId.equals(id)))
-          .write(
-        FlashcardsCompanion(
-          groupId: Value(general.id),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
+          .get();
+
+      for (final membership in memberships) {
+        final others = await (_db.select(_db.cardGroupMemberships)
+              ..where(
+                (table) =>
+                    table.cardId.equals(membership.cardId) &
+                    table.groupId.isNotValue(id),
+              ))
+            .get();
+        if (others.isEmpty) {
+          await _db.into(_db.cardGroupMemberships).insert(
+                CardGroupMembershipsCompanion.insert(
+                  cardId: membership.cardId,
+                  groupId: general.id,
+                ),
+              );
+        }
+      }
+
       await (_db.delete(_db.cardGroups)..where((table) => table.id.equals(id)))
           .go();
     });

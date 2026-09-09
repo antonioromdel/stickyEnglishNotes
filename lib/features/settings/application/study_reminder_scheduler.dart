@@ -15,6 +15,10 @@ abstract class StudyReminderScheduler {
   Future<void> cancelAll();
 }
 
+tz.TZDateTime reminderDateTime(DateTime next) {
+  return tz.TZDateTime.from(next, tz.local);
+}
+
 class FlutterStudyReminderScheduler implements StudyReminderScheduler {
   FlutterStudyReminderScheduler({FlutterLocalNotificationsPlugin? plugin})
       : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
@@ -51,6 +55,7 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
     );
 
     await _plugin.initialize(settings: initializationSettings);
+    await _ensureChannel();
     _ready = true;
   }
 
@@ -60,13 +65,16 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
     await _plugin.cancelAll();
     if (!settings.enabled || settings.weekdays.isEmpty) return;
 
+    final mode = await _androidScheduleMode();
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
         studyReminderChannelId,
         _channelName,
         channelDescription: _channelDescription,
-        importance: Importance.high,
+        importance: Importance.max,
         priority: Priority.high,
+        category: AndroidNotificationCategory.reminder,
+        icon: 'ic_stat_notify',
       ),
       iOS: DarwinNotificationDetails(),
       macOS: DarwinNotificationDetails(),
@@ -80,23 +88,11 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
         hour: settings.hour,
         minute: settings.minute,
       );
-      final scheduled = tz.TZDateTime(
-        tz.local,
-        next.year,
-        next.month,
-        next.day,
-        next.hour,
-        next.minute,
-      );
-
-      await _plugin.zonedSchedule(
+      await _zonedSchedule(
         id: weekday,
-        title: _title,
-        body: _body,
-        scheduledDate: scheduled,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        scheduled: reminderDateTime(next),
+        details: details,
+        mode: mode,
       );
     }
   }
@@ -111,6 +107,76 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
       }
     }
     await _plugin.cancelAll();
+  }
+
+  Future<void> _zonedSchedule({
+    required int id,
+    required tz.TZDateTime scheduled,
+    required NotificationDetails details,
+    required AndroidScheduleMode mode,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(
+        id: id,
+        title: _title,
+        body: _body,
+        scheduledDate: scheduled,
+        notificationDetails: details,
+        androidScheduleMode: mode,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      );
+    } on Object catch (error, stackTrace) {
+      debugPrint('No se pudo programar el aviso $id: $error\n$stackTrace');
+      if (mode == AndroidScheduleMode.inexactAllowWhileIdle) return;
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: _title,
+          body: _body,
+          scheduledDate: scheduled,
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        );
+      } on Object catch (fallbackError, fallbackStackTrace) {
+        debugPrint(
+          'Tampoco se pudo programar el aviso $id de forma inexacta: $fallbackError\n$fallbackStackTrace',
+        );
+      }
+    }
+  }
+
+  Future<AndroidScheduleMode> _androidScheduleMode() async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return AndroidScheduleMode.exactAllowWhileIdle;
+
+    try {
+      final canExact = await android.canScheduleExactNotifications() ?? false;
+      if (canExact) return AndroidScheduleMode.exactAllowWhileIdle;
+    } on Object catch (error, stackTrace) {
+      debugPrint(
+        'No se pudo comprobar el permiso de alarmas exactas: $error\n$stackTrace',
+      );
+    }
+    return AndroidScheduleMode.inexactAllowWhileIdle;
+  }
+
+  Future<void> _ensureChannel() async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return;
+
+    await android.createNotificationChannel(
+      const AndroidNotificationChannel(
+        studyReminderChannelId,
+        _channelName,
+        description: _channelDescription,
+        importance: Importance.max,
+      ),
+    );
   }
 
   Future<void> _setLocalTimezone() async {

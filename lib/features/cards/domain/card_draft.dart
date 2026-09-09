@@ -7,7 +7,7 @@ class CardDraft {
     required this.back,
     this.example = '',
     this.type = FlashcardType.word,
-    this.groupId,
+    this.groupIds = const {},
     this.source = CardSource.manual,
   });
 
@@ -15,7 +15,7 @@ class CardDraft {
   final String back;
   final String example;
   final FlashcardType type;
-  final int? groupId;
+  final Set<int> groupIds;
   final CardSource source;
 
   String get trimmedFront => front.trim();

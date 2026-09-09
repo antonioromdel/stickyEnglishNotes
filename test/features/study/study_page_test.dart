@@ -50,7 +50,7 @@ void main() {
     final database = AppDatabase.memory();
     final group = (await CardGroupsRepository(database).getAll()).first;
     await FlashcardsRepository(database).create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'hello',
       back: 'hola',
     );
@@ -79,7 +79,7 @@ void main() {
     final database = AppDatabase.memory();
     final group = (await CardGroupsRepository(database).getAll()).first;
     await FlashcardsRepository(database).create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'because',
       back: 'porque',
     );
@@ -105,8 +105,8 @@ void main() {
     final general = (await groupsRepo.getAll()).first;
     final verbs = await groupsRepo.create(name: 'Verbos');
     final cards = FlashcardsRepository(database);
-    await cards.create(groupId: general.id, front: 'hello', back: 'hola');
-    await cards.create(groupId: verbs.id, front: 'run', back: 'correr');
+    await cards.create(groupIds: {general.id}, front: 'hello', back: 'hola');
+    await cards.create(groupIds: {verbs.id}, front: 'run', back: 'correr');
 
     await pumpStudyPage(tester, database, groups: [general, verbs]);
 

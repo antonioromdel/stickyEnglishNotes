@@ -1,8 +1,18 @@
+import 'dart:async';
+
 import 'package:stickeenglishnotes/features/settings/application/notification_permission_client.dart';
 import 'package:stickeenglishnotes/features/settings/application/study_reminder_scheduler.dart';
 import 'package:stickeenglishnotes/features/settings/domain/notification_reminder_settings.dart';
 
 class FakeStudyReminderScheduler implements StudyReminderScheduler {
+  FakeStudyReminderScheduler({
+    this.scheduleGate,
+    this.throwOnSchedule = false,
+  });
+
+  final Completer<void>? scheduleGate;
+  final bool throwOnSchedule;
+
   NotificationReminderSettings? lastScheduled;
   int initializeCount = 0;
   int cancelCount = 0;
@@ -17,6 +27,12 @@ class FakeStudyReminderScheduler implements StudyReminderScheduler {
   Future<void> schedule(NotificationReminderSettings settings) async {
     scheduleCount += 1;
     lastScheduled = settings;
+    if (throwOnSchedule) {
+      throw StateError('No se pudo programar el aviso');
+    }
+    if (scheduleGate != null) {
+      await scheduleGate!.future;
+    }
   }
 
   @override

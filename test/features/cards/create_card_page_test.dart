@@ -103,21 +103,25 @@ void main() {
 
     await pumpCreatePage(tester, database: database, groups: groups);
 
-    await tester.ensureVisible(find.byKey(const Key('card-group-button')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('card-group-button')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('group-picker-${verbs.id}')));
-    await tester.pumpAndSettle();
-
     await tester.enterText(find.byKey(const Key('card-front-field')), 'run');
     await tester.enterText(find.byKey(const Key('card-back-field')), 'correr');
+
+    await tester.ensureVisible(find.byKey(Key('card-group-chip-${verbs.id}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('card-group-chip-${verbs.id}')));
+    await tester.pump();
+    final general = groups.firstWhere((group) => group.name == 'General');
+    await tester.tap(find.byKey(Key('card-group-chip-${general.id}')));
+    await tester.pump();
+
     await tester.tap(find.byKey(const Key('card-save-button')));
     await tester.pump();
     await tester.pump();
 
     final cards = await FlashcardsRepository(database).getAll();
-    expect(cards.single.groupId, verbs.id);
+    expect(await FlashcardsRepository(database).getGroupIds(cards.single.id), {
+      verbs.id,
+    });
 
     await disposeTestApp(tester);
   });

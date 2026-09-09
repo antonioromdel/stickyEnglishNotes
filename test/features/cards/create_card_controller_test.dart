@@ -43,7 +43,9 @@ void main() {
     expect(card.example, 'I stayed because it was raining.');
     expect(card.source, CardSource.manual);
 
-    final group = await CardGroupsRepository(database).getById(card.groupId);
+    final group = await CardGroupsRepository(database).getById(
+      (await flashcards.getGroupIds(card.id)).single,
+    );
     expect(group?.name, 'General');
     expect(await flashcards.getAll(), hasLength(1));
   });
@@ -63,11 +65,29 @@ void main() {
       CardDraft(
         front: 'run',
         back: 'correr',
-        groupId: verbs.id,
+        groupIds: {verbs.id},
       ),
     );
 
-    expect(card.groupId, verbs.id);
+    expect(await flashcards.getGroupIds(card.id), {verbs.id});
+  });
+
+  test('guarda la tarjeta en varios grupos', () async {
+    final groups = CardGroupsRepository(database);
+    final general = (await groups.getAll()).first;
+    final verbs = await groups.create(name: 'Verbos');
+
+    final card = await controller.create(
+      CardDraft(
+        front: 'run',
+        back: 'correr',
+        groupIds: {general.id, verbs.id},
+      ),
+    );
+
+    expect(await flashcards.getGroupIds(card.id), {general.id, verbs.id});
+    expect((await flashcards.getByGroup(general.id)).single.id, card.id);
+    expect((await flashcards.getByGroup(verbs.id)).single.id, card.id);
   });
 
   test('actualiza el contenido y el grupo de una tarjeta', () async {
@@ -81,13 +101,13 @@ void main() {
       draft: CardDraft(
         front: 'running',
         back: 'corriendo',
-        groupId: verbs.id,
+        groupIds: {verbs.id},
       ),
     );
 
     expect(updated.front, 'running');
     expect(updated.back, 'corriendo');
-    expect(updated.groupId, verbs.id);
+    expect(await flashcards.getGroupIds(updated.id), {verbs.id});
   });
 
   test('elimina una tarjeta', () async {

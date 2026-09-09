@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/notification_reminder_settings.dart';
@@ -109,10 +110,16 @@ class StudyReminderService {
     NotificationReminderSettings settings,
   ) async {
     await _save(settings);
-    if (settings.enabled) {
-      await _scheduler.schedule(settings);
-    } else {
-      await _scheduler.cancelAll();
+    try {
+      if (settings.enabled) {
+        await _scheduler.schedule(settings);
+      } else {
+        await _scheduler.cancelAll();
+      }
+    } on Object catch (error, stackTrace) {
+      debugPrint(
+        'No se pudo aplicar el recordatorio: $error\n$stackTrace',
+      );
     }
     return settings;
   }

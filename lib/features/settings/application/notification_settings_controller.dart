@@ -40,33 +40,28 @@ class NotificationSettingsController
     if (_busy) return state.enabled;
     _busy = true;
     try {
+      final service = ref.read(studyReminderServiceProvider);
       if (!enabled) {
         _awaitingPermission = false;
-        state = await ref.read(studyReminderServiceProvider).setEnabled(false);
+        state = state.copyWith(enabled: false);
+        await service.setEnabled(false);
         return false;
       }
 
       _awaitingPermission = true;
-      final service = ref.read(studyReminderServiceProvider);
-      final next = await service.setEnabled(true);
-      if (!ref.mounted) return next.enabled;
-
-      if (next.enabled) {
-        _awaitingPermission = false;
-        state = next;
-        return true;
-      }
-
-      final granted = await ref.read(notificationPermissionClientProvider).isGranted();
+      final permissions = ref.read(notificationPermissionClientProvider);
+      final granted = await permissions.request();
       if (!ref.mounted) return false;
-      if (granted) {
-        _awaitingPermission = false;
-        state = await service.applyGrantedPermission();
-        return true;
+
+      if (!granted && !await permissions.isGranted()) {
+        if (!ref.mounted) return false;
+        return false;
       }
 
-      state = next;
-      return false;
+      _awaitingPermission = false;
+      state = state.copyWith(enabled: true);
+      state = await service.applyGrantedPermission();
+      return true;
     } finally {
       _busy = false;
       if (_syncWhenIdle) {
@@ -77,28 +72,20 @@ class NotificationSettingsController
   }
 
   Future<void> toggleWeekday(int weekday) {
-    return _update(ref.read(studyReminderServiceProvider).updateSchedule(
-          weekdays: state.toggleWeekday(weekday).weekdays,
-        ));
+    final next = state.toggleWeekday(weekday);
+    if (next == state) return Future.value();
+    state = next;
+    return ref.read(studyReminderServiceProvider).updateSchedule(
+          weekdays: next.weekdays,
+        );
   }
 
   Future<void> setTime({required int hour, required int minute}) {
-    return _update(ref.read(studyReminderServiceProvider).updateSchedule(
+    state = state.copyWith(hour: hour, minute: minute);
+    return ref.read(studyReminderServiceProvider).updateSchedule(
           hour: hour,
           minute: minute,
-        ));
-  }
-
-  Future<void> _update(
-    Future<NotificationReminderSettings> future,
-  ) async {
-    if (_busy) return;
-    _busy = true;
-    try {
-      state = await future;
-    } finally {
-      _busy = false;
-    }
+        );
   }
 
   /// Tras el diálogo del sistema, Android a veces no notifica a Flutter.
@@ -114,10 +101,10 @@ class NotificationSettingsController
     if (!ref.mounted) return false;
 
     final service = ref.read(studyReminderServiceProvider);
-    final stored = service.load();
 
-    if (granted && (_awaitingPermission || stored.enabled || state.enabled)) {
+    if (granted && _awaitingPermission) {
       _awaitingPermission = false;
+      state = state.copyWith(enabled: true);
       state = await service.applyGrantedPermission();
       return false;
     }
@@ -128,9 +115,6 @@ class NotificationSettingsController
       return true;
     }
 
-    if (stored != state) {
-      state = stored;
-    }
     return false;
   }
 }

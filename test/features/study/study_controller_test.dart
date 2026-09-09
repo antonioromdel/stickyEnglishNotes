@@ -32,7 +32,7 @@ void main() {
     flashcards = FlashcardsRepository(database);
     final group = (await CardGroupsRepository(database).getAll()).first;
     await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'hello',
       back: 'hola',
       now: now,
@@ -118,7 +118,7 @@ void main() {
   test('carga solo las pendientes del grupo elegido', () async {
     final verbs = await CardGroupsRepository(database).create(name: 'Verbos');
     await flashcards.create(
-      groupId: verbs.id,
+      groupIds: {verbs.id},
       front: 'run',
       back: 'correr',
       now: now,
@@ -135,7 +135,7 @@ void main() {
   test('reanuda una sesión a medias con las tarjetas que faltaban', () async {
     final group = (await CardGroupsRepository(database).getAll()).first;
     await flashcards.create(
-      groupId: group.id,
+      groupIds: {group.id},
       front: 'because',
       back: 'porque',
       now: now,

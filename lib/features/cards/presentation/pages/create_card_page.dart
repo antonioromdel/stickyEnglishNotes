@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/theme/app_collection_palette.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/paper_card.dart';
 import '../../../../data/database/app_database.dart';
@@ -9,7 +10,6 @@ import '../../../../data/models/card_enums.dart';
 import '../../../../data/providers.dart';
 import '../../../../data/repositories/card_groups_repository.dart';
 import '../../../groups/application/groups_providers.dart';
-import '../../../groups/presentation/widgets/group_picker_sheet.dart';
 import '../../application/create_card_controller.dart';
 import '../../domain/card_draft.dart';
 import '../card_type_labels.dart';
@@ -37,7 +37,7 @@ class _CreateCardPageState extends ConsumerState<CreateCardPage> {
   final _frontFocus = FocusNode();
 
   FlashcardType _type = FlashcardType.word;
-  int? _groupId;
+  Set<int> _groupIds = {};
   bool _submitting = false;
   bool _loadingCard = false;
   bool _missingCard = false;
@@ -47,7 +47,9 @@ class _CreateCardPageState extends ConsumerState<CreateCardPage> {
   @override
   void initState() {
     super.initState();
-    _groupId = widget.initialGroupId;
+    if (widget.initialGroupId != null) {
+      _groupIds = {widget.initialGroupId!};
+    }
     if (widget.cardId != null) {
       _loadingCard = true;
       _loadCard();
@@ -80,21 +82,29 @@ class _CreateCardPageState extends ConsumerState<CreateCardPage> {
     _frontController.text = card.front;
     _backController.text = card.back;
     _exampleController.text = card.example ?? '';
+    final groupIds = await ref.read(flashcardsRepositoryProvider).getGroupIds(
+      card.id,
+    );
+    if (!mounted) return;
 
     setState(() {
       _type = card.type;
-      _groupId = card.groupId;
+      _groupIds = groupIds;
       _loadingCard = false;
     });
   }
 
   Future<void> _save() async {
+    final groupsList = ref.read(cardGroupsProvider).maybeWhen(
+          data: (value) => value,
+          orElse: () => const <CardGroup>[],
+        );
     final draft = CardDraft(
       front: _frontController.text,
       back: _backController.text,
       example: _exampleController.text,
       type: _type,
-      groupId: _groupId,
+      groupIds: _effectiveGroupIds(groupsList),
       source: CardSource.manual,
     );
 
@@ -139,28 +149,21 @@ class _CreateCardPageState extends ConsumerState<CreateCardPage> {
     }
   }
 
-  Future<void> _pickGroup(List<CardGroup> groups) async {
-    final selected = await showGroupPickerSheet(
-      context: context,
-      groups: groups,
-      selectedGroupId: _effectiveGroupId(groups),
-    );
-    if (selected?.groupId == null || !mounted) return;
-    setState(() => _groupId = selected!.groupId);
-  }
-
-  int? _effectiveGroupId(List<CardGroup> groups) {
-    if (_groupId != null) return _groupId;
-    return CardGroupsRepository.defaultIdOf(groups);
-  }
-
-  String _groupLabel(List<CardGroup> groups) {
-    final selectedId = _effectiveGroupId(groups);
-    if (selectedId == null) return 'Elige un grupo';
-    for (final group in groups) {
-      if (group.id == selectedId) return group.name;
+  void _toggleGroup(int groupId, List<CardGroup> groups) {
+    final selected = {..._effectiveGroupIds(groups)};
+    if (selected.contains(groupId)) {
+      if (selected.length <= 1) return;
+      selected.remove(groupId);
+    } else {
+      selected.add(groupId);
     }
-    return 'Elige un grupo';
+    setState(() => _groupIds = selected);
+  }
+
+  Set<int> _effectiveGroupIds(List<CardGroup> groups) {
+    if (_groupIds.isNotEmpty) return _groupIds;
+    final defaultId = CardGroupsRepository.defaultIdOf(groups);
+    return defaultId == null ? <int>{} : {defaultId};
   }
 
   @override
@@ -253,13 +256,12 @@ class _CreateCardPageState extends ConsumerState<CreateCardPage> {
           errorText: _backError,
         ),
         const SizedBox(height: AppSpacing.xl),
-        Text('Grupo', style: theme.textTheme.titleMedium),
+        Text('Grupos', style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
-        OutlinedButton.icon(
-          key: const Key('card-group-button'),
-          onPressed: groups.isEmpty ? null : () => _pickGroup(groups),
-          icon: const Icon(Icons.folder_outlined),
-          label: Text(_groupLabel(groups)),
+        _GroupSelector(
+          groups: groups,
+          selectedIds: _effectiveGroupIds(groups),
+          onToggle: (groupId) => _toggleGroup(groupId, groups),
         ),
         const SizedBox(height: AppSpacing.xl),
         Text('Ejemplo (opcional)', style: theme.textTheme.titleMedium),
@@ -357,6 +359,44 @@ class _CardSideField extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _GroupSelector extends StatelessWidget {
+  const _GroupSelector({
+    required this.groups,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  final List<CardGroup> groups;
+  final Set<int> selectedIds;
+  final ValueChanged<int> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: [
+        for (final group in groups)
+          FilterChip(
+            key: Key('card-group-chip-${group.id}'),
+            label: Text(group.name),
+            selected: selectedIds.contains(group.id),
+            avatar: CircleAvatar(
+              backgroundColor: AppCollectionPalette.forId(
+                group.id,
+                brightness,
+              ).background,
+              radius: 8,
+            ),
+            onSelected: (_) => onToggle(group.id),
+          ),
+      ],
     );
   }
 }
