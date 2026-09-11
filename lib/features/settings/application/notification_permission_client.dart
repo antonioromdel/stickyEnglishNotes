@@ -51,10 +51,7 @@ class FlutterNotificationPermissionClient implements NotificationPermissionClien
 
   @override
   Future<bool> request() async {
-    final granted = await _requestNotifications();
-    if (!granted) return false;
-    await _requestExactAlarms();
-    return true;
+    return _requestNotifications();
   }
 
   Future<bool> _requestNotifications() async {
@@ -94,23 +91,6 @@ class FlutterNotificationPermissionClient implements NotificationPermissionClien
     }
 
     return false;
-  }
-
-  Future<void> _requestExactAlarms() async {
-    final android = _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    if (android == null) return;
-
-    try {
-      final canExact = await android.canScheduleExactNotifications() ?? false;
-      if (canExact) return;
-      await android.requestExactAlarmsPermission();
-    } on Object catch (error, stackTrace) {
-      debugPrint(
-        'No se pudo pedir permiso de alarmas exactas: $error\n$stackTrace',
-      );
-    }
   }
 
   @override
