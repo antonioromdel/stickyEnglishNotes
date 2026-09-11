@@ -115,6 +115,12 @@ class NotificationSettingsController
       return true;
     }
 
+    // Al volver de Ajustes el permiso de alarmas exactas puede haberse
+    // concedido después de haber programado avisos inexactos.
+    if (granted && state.enabled) {
+      state = await service.reconcile();
+    }
+
     return false;
   }
 }

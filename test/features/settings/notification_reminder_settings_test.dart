@@ -1,3 +1,4 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stickeenglishnotes/features/settings/application/study_reminder_scheduler.dart';
 import 'package:stickeenglishnotes/features/settings/domain/notification_reminder_settings.dart';
@@ -57,5 +58,16 @@ void main() {
     tz.setLocalLocation(tz.UTC);
     final local = DateTime(2026, 9, 10, 9, 30);
     expect(reminderDateTime(local).toUtc(), local.toUtc());
+  });
+
+  test('usa alarma de reloj cuando el sistema permite avisos exactos', () {
+    expect(
+      androidReminderScheduleMode(canScheduleExact: true),
+      AndroidScheduleMode.alarmClock,
+    );
+    expect(
+      androidReminderScheduleMode(canScheduleExact: false),
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    );
   });
 }

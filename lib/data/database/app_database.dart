@@ -57,18 +57,94 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: (migrator, from, to) async {
         if (from < 2) {
-          await migrator.createTable(cardGroupMemberships);
-          await customStatement(
-            'INSERT INTO card_group_memberships (card_id, group_id) '
-            'SELECT id, group_id FROM flashcards',
-          );
-          await migrator.alterTable(TableMigration(flashcards));
+          await _migrateFlashcardsToManyGroups(migrator);
         }
       },
       beforeOpen: (details) async {
+        if (!details.wasCreated) {
+          // Repara un upgrade a medias (p. ej. si falló al recrear el índice
+          // idx_flashcards_group) aunque user_version ya sea 2.
+          await _migrateFlashcardsToManyGroups(createMigrator());
+        }
         await customStatement('PRAGMA foreign_keys = ON');
       },
     );
+  }
+
+  /// Pasa de `flashcards.group_id` a la tabla N:N. Es idempotente: un intento
+  /// previo puede haber creado pertenencias y dejado el índice viejo, que
+  /// [Migrator.alterTable] volvería a crear sobre una columna ya borrada.
+  Future<void> _migrateFlashcardsToManyGroups(Migrator migrator) async {
+    await customStatement('PRAGMA foreign_keys = OFF');
+    try {
+      if (!await _hasTable('card_group_memberships')) {
+        await migrator.createTable(cardGroupMemberships);
+      }
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_card_group_memberships_group '
+        'ON card_group_memberships (group_id)',
+      );
+
+      if (await _hasColumn('flashcards', 'group_id')) {
+        await customStatement(
+          'INSERT OR IGNORE INTO card_group_memberships (card_id, group_id) '
+          'SELECT id, group_id FROM flashcards',
+        );
+        await customStatement('DROP INDEX IF EXISTS idx_flashcards_group');
+        await migrator.alterTable(TableMigration(flashcards));
+      }
+
+      await _ensureOrphanCardsInGeneral();
+    } finally {
+      await customStatement('PRAGMA foreign_keys = ON');
+    }
+  }
+
+  Future<void> _ensureOrphanCardsInGeneral() async {
+    if (!await _hasTable('card_group_memberships')) return;
+    if (await _hasColumn('flashcards', 'group_id')) return;
+
+    final orphans = await customSelect(
+      'SELECT id FROM flashcards '
+      'WHERE id NOT IN (SELECT card_id FROM card_group_memberships)',
+    ).get();
+    if (orphans.isEmpty) return;
+
+    final general = await (select(cardGroups)
+          ..where((table) => table.name.equals('General')))
+        .getSingleOrNull();
+    final generalId = general?.id ??
+        await into(cardGroups).insert(
+          CardGroupsCompanion.insert(
+            name: 'General',
+            description: const Value('Grupo inicial'),
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+
+    for (final row in orphans) {
+      await into(cardGroupMemberships).insert(
+        CardGroupMembershipsCompanion.insert(
+          cardId: row.read<int>('id'),
+          groupId: generalId,
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    }
+  }
+
+  Future<bool> _hasTable(String name) async {
+    final rows = await customSelect(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+      variables: [Variable<String>(name)],
+    ).get();
+    return rows.isNotEmpty;
+  }
+
+  Future<bool> _hasColumn(String table, String column) async {
+    final rows = await customSelect('PRAGMA table_info($table)').get();
+    return rows.any((row) => row.read<String>('name') == column);
   }
 }
 
