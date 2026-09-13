@@ -44,7 +44,14 @@ class StudyReminderService {
   }
 
   Future<void> initialize() async {
-    await _scheduler.initialize();
+    // Aunque preparar el programador falle, hay que reconciliar: si no, el
+    // interruptor seguiría mostrando el valor guardado (que una restauración
+    // de copia de seguridad puede traer en `true`) sin permiso del sistema.
+    try {
+      await _scheduler.initialize();
+    } on Object catch (error, stackTrace) {
+      debugPrint('No se pudo preparar el programador: $error\n$stackTrace');
+    }
     await reconcile();
   }
 

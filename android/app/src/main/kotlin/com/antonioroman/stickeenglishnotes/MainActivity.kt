@@ -1,4 +1,4 @@
-package com.example.stickeenglishnotes
+package com.antonioroman.stickeenglishnotes
 
 import io.flutter.embedding.android.FlutterActivity
 

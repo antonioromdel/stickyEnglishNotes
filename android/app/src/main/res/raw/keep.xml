@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  El plugin de Gradle de Flutter activa shrinkResources en release. El icono de
+  la notificación solo se resuelve por nombre en tiempo de ejecución
+  (Resources.getIdentifier), así que el shrinker no lo ve referenciado y lo
+  elimina del APK. Sin él, initialize() del plugin de notificaciones falla con
+  "invalid_icon" y no se programa ningún aviso.
+-->
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_notify" />

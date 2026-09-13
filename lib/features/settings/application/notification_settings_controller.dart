@@ -117,6 +117,13 @@ class NotificationSettingsController
 
     if (granted && state.enabled) {
       state = await service.reconcile();
+      return false;
+    }
+
+    // El permiso puede desaparecer sin pasar por la app (Ajustes del sistema o
+    // una reinstalación que restaura las preferencias pero no los permisos).
+    if (!granted && state.enabled) {
+      state = await service.disableLocally();
     }
 
     return false;
