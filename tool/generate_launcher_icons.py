@@ -55,6 +55,8 @@ def main() -> None:
         save_resized(source, android / folder / 'ic_launcher.png', size)
         save_resized(source, android / folder / 'ic_launcher_round.png', size)
 
+    # El launcher solo muestra el 66% central. El logo entero tiene que
+    # caber en ese círculo; si no, las notas se cortan y parecen descentradas.
     for folder, size in {
         'mipmap-mdpi': 108,
         'mipmap-hdpi': 162,
@@ -62,7 +64,13 @@ def main() -> None:
         'mipmap-xxhdpi': 324,
         'mipmap-xxxhdpi': 432,
     }.items():
-        save_resized(source, android / folder / 'ic_launcher_foreground.png', size)
+        save_inset(
+            source,
+            android / folder / 'ic_launcher_foreground.png',
+            size,
+            background,
+            0.60,
+        )
 
     ios = ROOT / 'ios' / 'Runner' / 'Assets.xcassets' / 'AppIcon.appiconset'
     for name, size in {
