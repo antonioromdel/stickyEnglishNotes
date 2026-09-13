@@ -51,7 +51,6 @@ class FakeNotificationPermissionClient implements NotificationPermissionClient {
   bool granted;
   bool requestShouldGrant;
   int requestCount = 0;
-  int revokeCount = 0;
 
   @override
   Future<bool> isGranted() async => granted;
@@ -63,11 +62,5 @@ class FakeNotificationPermissionClient implements NotificationPermissionClient {
       granted = true;
     }
     return granted;
-  }
-
-  @override
-  Future<void> revoke() async {
-    revokeCount += 1;
-    granted = false;
   }
 }

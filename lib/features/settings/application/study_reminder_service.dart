@@ -67,11 +67,11 @@ class StudyReminderService {
   Future<NotificationReminderSettings> setEnabled(bool enabled) async {
     final current = load();
     if (!enabled) {
-      final disabled = current.copyWith(enabled: false);
-      await _save(disabled);
-      await _scheduler.cancelAll();
-      await _permissions.revoke();
-      return disabled;
+      // Apagar el recordatorio solo cancela los avisos. El permiso del sistema
+      // se queda como esté: revocarlo desde la app lo aplica Android al morir
+      // el proceso y no se puede cancelar, así que al volver a activarlo los
+      // avisos se programaban pero nunca llegaban a mostrarse.
+      return disableLocally();
     }
 
     final granted = await _permissions.request();

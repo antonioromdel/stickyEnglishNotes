@@ -44,15 +44,14 @@ void main() {
     expect(scheduler.lastScheduled?.enabled, isTrue);
   });
 
-  test('desactivar cancela avisos y revoca el permiso', () async {
+  test('desactivar cancela los avisos y mantiene el permiso', () async {
     await service.setEnabled(true);
     expect(permissions.granted, isTrue);
 
     final disabled = await service.setEnabled(false);
 
     expect(disabled.enabled, isFalse);
-    expect(permissions.granted, isFalse);
-    expect(permissions.revokeCount, 1);
+    expect(permissions.granted, isTrue);
     expect(scheduler.lastScheduled, isNull);
   });
 
@@ -74,7 +73,6 @@ void main() {
 
     expect(disabled.enabled, isFalse);
     expect(permissions.granted, isTrue);
-    expect(permissions.revokeCount, 0);
     expect(scheduler.lastScheduled, isNull);
   });
 

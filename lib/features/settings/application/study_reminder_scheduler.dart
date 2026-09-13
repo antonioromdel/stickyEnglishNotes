@@ -55,7 +55,6 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
     );
 
     await _plugin.initialize(settings: initializationSettings);
-    await _ensureChannel();
     _ready = true;
   }
 
@@ -64,6 +63,10 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
     await initialize();
     await _plugin.cancelAll();
     if (!settings.enabled || settings.weekdays.isEmpty) return;
+
+    // Crear el canal en cada programación: es idempotente y garantiza que
+    // exista aunque el sistema lo haya retirado entre sesiones.
+    await _ensureChannel();
 
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -112,18 +115,27 @@ class FlutterStudyReminderScheduler implements StudyReminderScheduler {
     required tz.TZDateTime scheduled,
     required NotificationDetails details,
   }) async {
-    try {
-      await _plugin.zonedSchedule(
-        id: id,
-        title: _title,
-        body: _body,
-        scheduledDate: scheduled,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      );
-    } on Object catch (error, stackTrace) {
-      debugPrint('No se pudo programar el aviso $id: $error\n$stackTrace');
+    // `USE_EXACT_ALARM` se concede al instalar, pero si el sistema lo deniega
+    // el plugin lanza y el aviso se quedaría sin programar. Mejor uno
+    // aproximado que ninguno.
+    for (final mode in const [
+      AndroidScheduleMode.exactAllowWhileIdle,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ]) {
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: _title,
+          body: _body,
+          scheduledDate: scheduled,
+          notificationDetails: details,
+          androidScheduleMode: mode,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        );
+        return;
+      } on Object catch (error, stackTrace) {
+        debugPrint('No se pudo programar el aviso $id ($mode): $error\n$stackTrace');
+      }
     }
   }
 
