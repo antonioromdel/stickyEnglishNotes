@@ -7,7 +7,10 @@ enum CardDifficulty { easy, normal, hard }
 /// Origen de la tarjeta. Permite distinguir más adelante errores, IA o importaciones.
 enum CardSource { manual, mistake, ai, imported }
 
-/// Valoración de una revisión concreta (Again / Hard / Good / Easy).
+/// Valoración de una revisión.
+///
+/// En pantalla: [again] No recuerdo, [hard] ¡He acertado!, [good] ¡Acertado!
+/// [easy] se conserva para no alterar revisiones ya guardadas.
 enum ReviewRating { again, hard, good, easy }
 
 /// Resultado derivado de una revisión, usado en estadísticas.

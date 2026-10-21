@@ -15,19 +15,13 @@ void main() {
         overrides: [
           frequentCardErrorsProvider.overrideWith((ref) => Stream.value([])),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const ErrorsPage(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const ErrorsPage()),
       ),
     );
     await tester.pump();
 
     expect(find.text('Aún no hay errores'), findsOneWidget);
-    expect(
-      find.textContaining('Cuando marques Otra vez'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Cuando marques No recuerdo'), findsOneWidget);
   });
 
   testWidgets('lista los fallos agrupados por tarjeta', (tester) async {
@@ -41,12 +35,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          frequentCardErrorsProvider.overrideWith((ref) => Stream.value([item])),
+          frequentCardErrorsProvider.overrideWith(
+            (ref) => Stream.value([item]),
+          ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const ErrorsPage(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const ErrorsPage()),
       ),
     );
     await tester.pump();
@@ -68,12 +61,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          frequentCardErrorsProvider.overrideWith((ref) => Stream.value([item])),
+          frequentCardErrorsProvider.overrideWith(
+            (ref) => Stream.value([item]),
+          ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const ErrorsPage(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const ErrorsPage()),
       ),
     );
     await tester.pump();

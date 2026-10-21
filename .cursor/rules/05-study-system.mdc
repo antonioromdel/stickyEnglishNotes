@@ -39,27 +39,27 @@ Next Card
 
 ## Valoraciones
 
-Utilizar inicialmente cuatro opciones:
+Tres opciones en la pantalla de estudio:
 
 ```text
-Again
-Hard
-Good
-Easy
+No recuerdo  → Again
+¡He acertado! → Hard
+¡Acertado!    → Good
 ```
 
-## Repetición espaciada inicial
+`Easy` permanece en el enum por las revisiones ya guardadas. No ofrecerlo en la pantalla.
 
-Comportamiento inicial:
+## Repetición espaciada
+
+Cada botón programa siempre el mismo plazo, sin crecer con el historial:
 
 ```text
-Again → 5 minutos
-Hard  → 1 día
-Good  → 2 días
-Easy  → 4 días
+No recuerdo   → 5 minutos, error
+¡He acertado! → 1 día, acierto
+¡Acertado!    → 2 días, acierto
 ```
 
-Los intervalos deben aumentar progresivamente según el historial.
+Así el estudio del día siguiente solo incluye lo marcado como ¡He acertado! y lo que ya estuviera pendiente. ¡Acertado! no aparece al día siguiente.
 
 Este sistema debe estar encapsulado en un servicio independiente.
 

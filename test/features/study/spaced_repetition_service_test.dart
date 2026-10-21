@@ -21,31 +21,31 @@ void main() {
       expect(schedule.result, ReviewResult.incorrect);
     });
 
-    test('Hard programa 1 día', () {
+    test('¡He acertado! programa 1 día y cuenta como acierto', () {
       final schedule = srs.calculateNextReview(
         rating: ReviewRating.hard,
-        currentIntervalMinutes: 0,
-        currentRepetitions: 0,
+        currentIntervalMinutes: SpacedRepetitionService.goodMinutes,
+        currentRepetitions: 4,
         now: now,
       );
 
       expect(schedule.intervalMinutes, SpacedRepetitionService.hardMinutes);
       expect(schedule.nextReviewAt, now.add(const Duration(days: 1)));
-      expect(schedule.repetitions, 1);
+      expect(schedule.repetitions, 5);
       expect(schedule.result, ReviewResult.correct);
     });
 
-    test('Good programa 2 días', () {
+    test('¡Acertado! programa 2 días y cuenta como acierto', () {
       final schedule = srs.calculateNextReview(
         rating: ReviewRating.good,
-        currentIntervalMinutes: 0,
-        currentRepetitions: 0,
+        currentIntervalMinutes: SpacedRepetitionService.hardMinutes,
+        currentRepetitions: 3,
         now: now,
       );
 
       expect(schedule.intervalMinutes, SpacedRepetitionService.goodMinutes);
       expect(schedule.nextReviewAt, now.add(const Duration(days: 2)));
-      expect(schedule.repetitions, 1);
+      expect(schedule.repetitions, 4);
       expect(schedule.result, ReviewResult.correct);
     });
 
@@ -65,24 +65,6 @@ void main() {
   });
 
   group('revisiones posteriores', () {
-    test('Good aumenta el intervalo respecto al anterior', () {
-      final first = srs.calculateNextReview(
-        rating: ReviewRating.good,
-        currentIntervalMinutes: 0,
-        currentRepetitions: 0,
-        now: now,
-      );
-      final second = srs.calculateNextReview(
-        rating: ReviewRating.good,
-        currentIntervalMinutes: first.intervalMinutes,
-        currentRepetitions: first.repetitions,
-        now: now,
-      );
-
-      expect(second.intervalMinutes, first.intervalMinutes * 2);
-      expect(second.repetitions, 2);
-    });
-
     test('Again vuelve a 5 minutos aunque hubiera un intervalo largo', () {
       final schedule = srs.calculateNextReview(
         rating: ReviewRating.again,

@@ -13,6 +13,7 @@ import '../../../groups/application/groups_providers.dart';
 import '../../application/study_controller.dart';
 import '../../application/study_session.dart';
 import '../widgets/flip_card.dart';
+import '../widgets/study_card_transition.dart';
 import '../widgets/study_card_face.dart';
 import '../widgets/study_group_filter_bar.dart';
 import '../widgets/study_progress_bar.dart';
@@ -134,34 +135,36 @@ class _StudyBody extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           Expanded(
-            child: FlipCard(
-              key: ValueKey(card.id),
-              isFlipped: session.isFlipped,
-              onTap: () {
-                ref.read(ttsControllerProvider.notifier).stop();
-                ref.read(studyControllerProvider.notifier).flip();
-              },
-              front: StudyCardFace(
-                key: const Key('study-card-front'),
-                text: card.front,
-                caption: 'Toca para voltear',
-                voice: speech.voiceFor(card.front),
-                utteranceId: 'study-front-${card.id}',
-              ),
-              back: StudyCardFace(
-                key: const Key('study-card-back'),
-                text: card.back,
-                example: card.example,
-                caption: '¿Qué tal lo recuerdas?',
-                adaptToLines: true,
-                voice: speech.voiceFor(card.back),
-                utteranceId: 'study-back-${card.id}',
+            child: StudyCardTransition(
+              cardId: card.id,
+              child: FlipCard(
+                isFlipped: session.isFlipped,
+                onTap: () {
+                  ref.read(ttsControllerProvider.notifier).stop();
+                  ref.read(studyControllerProvider.notifier).flip();
+                },
+                front: StudyCardFace(
+                  key: const Key('study-card-front'),
+                  text: card.front,
+                  caption: 'Toca para voltear',
+                  voice: speech.voiceFor(card.front),
+                  utteranceId: 'study-front-${card.id}',
+                ),
+                back: StudyCardFace(
+                  key: const Key('study-card-back'),
+                  text: card.back,
+                  example: card.example,
+                  caption: '¿Qué tal lo recuerdas?',
+                  adaptToLines: true,
+                  voice: speech.voiceFor(card.back),
+                  utteranceId: 'study-back-${card.id}',
+                ),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           SizedBox(
-            height: 80,
+            height: StudyRatingButtons.barHeight,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: session.isFlipped

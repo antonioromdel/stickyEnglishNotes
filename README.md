@@ -6,11 +6,11 @@ El objetivo es estudiar rápido, recordar a largo plazo y consultar el progreso 
 
 ## Características
 
-- **Estudio con repetición espaciada**: voltea la tarjeta, valora (Otra vez / Difícil / Bien / Fácil) y el algoritmo calcula la próxima revisión.
+- **Estudio**: voltea la tarjeta y elige No recuerdo, ¡He acertado! o ¡Acertado!.
 - **Sesiones reanudables**: puedes salir y continuar por donde lo dejaste.
 - **Tarjetas propias**: frente, reverso, ejemplo opcional y tipo (palabra, frase u oración).
 - **Grupos**: organiza las tarjetas; existe un grupo *General* por defecto.
-- **Mis errores**: las respuestas marcadas como *Otra vez* aparecen en una lista para repasar lo que más cuesta.
+- **Mis errores**: las respuestas marcadas como *No recuerdo* aparecen en una lista para repasar lo que más cuesta.
 - **Progreso real**: tarjetas estudiadas, aciertos, fallos, precisión, pendientes, racha y actividad de los últimos 7 días.
 - **Pronunciación (TTS)**: voces en inglés (Reino Unido / Estados Unidos) y español.
 - **Recordatorios locales**: notificaciones para no olvidar estudiar.
@@ -69,16 +69,15 @@ Cada feature suele separar `presentation`, `application` y, cuando hace falta, `
 
 Una tarjeta está **pendiente** cuando `nextReviewAt` es menor o igual que ahora.
 
-Intervalos iniciales (primera revisión):
+Cada botón programa siempre el mismo plazo:
 
-| Valoración | Intervalo |
-| --- | --- |
-| Otra vez | 5 minutos |
-| Difícil | 1 día |
-| Bien | 2 días |
-| Fácil | 4 días |
+| Valoración | Resultado | Intervalo |
+| --- | --- | --- |
+| No recuerdo | Fallo | 5 minutos |
+| ¡He acertado! | Acierto | 1 día |
+| ¡Acertado! | Acierto | 2 días |
 
-En revisiones posteriores el intervalo crece según el historial. Esa lógica vive en `SpacedRepetitionService`, no en la pantalla de estudio.
+Esa lógica vive en `SpacedRepetitionService`, no en la pantalla de estudio.
 
 Cada respuesta genera un registro de revisión (tarjeta, resultado, dificultad, fecha e intervalos).
 

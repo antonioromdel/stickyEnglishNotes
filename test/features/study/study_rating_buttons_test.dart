@@ -15,10 +15,22 @@ void main() {
       ),
     );
 
-    expect(find.text('Otra vez'), findsOneWidget);
-    expect(find.text('Difícil'), findsOneWidget);
-    expect(find.text('Bien'), findsOneWidget);
-    expect(find.text('Fácil'), findsOneWidget);
+    expect(find.text('No recuerdo'), findsOneWidget);
+    expect(find.text('5 min'), findsNothing);
+    expect(find.text('¡He acertado!'), findsOneWidget);
+    expect(find.text('¡Acertado!'), findsOneWidget);
+    expect(find.text('Recordar en 2 días'), findsOneWidget);
+    expect(find.text('Difícil'), findsNothing);
+    expect(find.text('Fácil'), findsNothing);
+
+    final again = tester.getSize(find.byKey(const Key('rating-again')));
+    final tomorrow = tester.getSize(find.byKey(const Key('rating-hard')));
+    final later = tester.getSize(find.byKey(const Key('rating-good')));
+    expect(again, tomorrow);
+    expect(tomorrow, later);
+
+    await tester.tap(find.byKey(const Key('rating-hard')));
+    expect(selected, ReviewRating.hard);
 
     await tester.tap(find.byKey(const Key('rating-good')));
     expect(selected, ReviewRating.good);

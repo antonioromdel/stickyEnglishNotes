@@ -30,7 +30,7 @@ class ErrorsPage extends ConsumerWidget {
             return const AppEmptyState(
               icon: Icons.replay,
               title: 'Aún no hay errores',
-              message: 'Cuando marques Otra vez al estudiar, las tarjetas que falles aparecerán aquí.',
+              message: 'Cuando marques No recuerdo al estudiar, las tarjetas que falles aparecerán aquí.',
             );
           }
 

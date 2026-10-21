@@ -30,7 +30,9 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) => preferences),
-          textToSpeechServiceProvider.overrideWith((ref) => FakeTextToSpeechService()),
+          textToSpeechServiceProvider.overrideWith(
+            (ref) => FakeTextToSpeechService(),
+          ),
           appDatabaseProvider.overrideWith((ref) {
             ref.onDispose(database.close);
             return database;
@@ -49,11 +51,8 @@ void main() {
   testWidgets('completa una sesión al valorar una tarjeta', (tester) async {
     final database = AppDatabase.memory();
     final group = (await CardGroupsRepository(database).getAll()).first;
-    await FlashcardsRepository(database).create(
-      groupIds: {group.id},
-      front: 'hello',
-      back: 'hola',
-    );
+    await FlashcardsRepository(database)
+        .create(groupIds: {group.id}, front: 'hello', back: 'hola');
 
     await pumpStudyPage(tester, database);
 
@@ -64,7 +63,8 @@ void main() {
     await tester.tap(find.text('hello'));
     await tester.pump();
 
-    expect(find.text('Bien'), findsOneWidget);
+    expect(find.text('No recuerdo'), findsOneWidget);
+    expect(find.text('¡He acertado!'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rating-good')));
     await tester.pump();
     await tester.pump();
@@ -78,11 +78,8 @@ void main() {
   testWidgets('completa la sesión al fallar una tarjeta', (tester) async {
     final database = AppDatabase.memory();
     final group = (await CardGroupsRepository(database).getAll()).first;
-    await FlashcardsRepository(database).create(
-      groupIds: {group.id},
-      front: 'because',
-      back: 'porque',
-    );
+    await FlashcardsRepository(database)
+        .create(groupIds: {group.id}, front: 'because', back: 'porque');
 
     await pumpStudyPage(tester, database);
 
@@ -115,8 +112,7 @@ void main() {
     await tester.tap(find.byKey(const Key('study-group-filter')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('group-picker-${verbs.id}')));
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('run'), findsOneWidget);
     expect(find.text('hello'), findsNothing);

@@ -1,9 +1,12 @@
-import 'dart:math';
-
 import '../../../data/models/card_enums.dart';
 import 'review_schedule.dart';
 
-/// Algoritmo SRS inicial, sustituible más adelante (p. ej. por SM-2).
+/// Programa la próxima revisión a partir de la valoración.
+///
+/// Los intervalos no crecen con el historial: cada botón significa
+/// siempre el mismo plazo, para que el estudio de mañana sea predecible.
+/// [ReviewRating.easy] se conserva por revisiones ya guardadas y no
+/// se ofrece en la pantalla.
 class SpacedRepetitionService {
   const SpacedRepetitionService();
 
@@ -11,10 +14,6 @@ class SpacedRepetitionService {
   static const int hardMinutes = 24 * 60;
   static const int goodMinutes = 2 * 24 * 60;
   static const int easyMinutes = 4 * 24 * 60;
-
-  static const double hardMultiplier = 1.2;
-  static const double goodMultiplier = 2.0;
-  static const double easyMultiplier = 2.5;
 
   ReviewSchedule calculateNextReview({
     required ReviewRating rating,
@@ -31,39 +30,18 @@ class SpacedRepetitionService {
       );
     }
 
-    final baseMinutes = _baseMinutes(rating);
-    final isFirstReview =
-        currentRepetitions == 0 || currentIntervalMinutes == 0;
-    final nextInterval = isFirstReview
-        ? baseMinutes
-        : max(
-            baseMinutes,
-            (currentIntervalMinutes * _multiplier(rating)).round(),
-          );
-
-    return ReviewSchedule(
-      intervalMinutes: nextInterval,
-      nextReviewAt: now.add(Duration(minutes: nextInterval)),
-      repetitions: currentRepetitions + 1,
-      result: ReviewResult.correct,
-    );
-  }
-
-  int _baseMinutes(ReviewRating rating) {
-    return switch (rating) {
-      ReviewRating.again => againMinutes,
+    final intervalMinutes = switch (rating) {
       ReviewRating.hard => hardMinutes,
       ReviewRating.good => goodMinutes,
       ReviewRating.easy => easyMinutes,
+      ReviewRating.again => againMinutes,
     };
-  }
 
-  double _multiplier(ReviewRating rating) {
-    return switch (rating) {
-      ReviewRating.again => 0,
-      ReviewRating.hard => hardMultiplier,
-      ReviewRating.good => goodMultiplier,
-      ReviewRating.easy => easyMultiplier,
-    };
+    return ReviewSchedule(
+      intervalMinutes: intervalMinutes,
+      nextReviewAt: now.add(Duration(minutes: intervalMinutes)),
+      repetitions: currentRepetitions + 1,
+      result: ReviewResult.correct,
+    );
   }
 }
