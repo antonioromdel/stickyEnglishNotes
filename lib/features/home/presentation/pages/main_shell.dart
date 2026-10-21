@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../widgets/app_side_menu.dart';
+
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.navigationShell});
 
@@ -9,6 +11,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppSideMenu(),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
@@ -25,14 +28,14 @@ class MainShell extends StatelessWidget {
             label: 'Estudiar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: 'Progreso',
+            icon: Icon(Icons.translate),
+            selectedIcon: Icon(Icons.translate),
+            label: 'Traductor',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Ajustes',
+            icon: Icon(Icons.text_snippet_outlined),
+            selectedIcon: Icon(Icons.text_snippet),
+            label: 'Textos',
           ),
         ],
       ),

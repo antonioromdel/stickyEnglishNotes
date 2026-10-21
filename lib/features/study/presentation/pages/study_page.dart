@@ -6,6 +6,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/tts/speech_settings_controller.dart';
 import '../../../../core/tts/tts_controller.dart';
+import '../../../../core/widgets/app_drawer_button.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../data/database/app_database.dart';
 import '../../../../data/models/card_enums.dart';
@@ -34,7 +35,10 @@ class StudyPage extends ConsumerWidget {
     final groupName = _groupName(groupsList, selectedGroupId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Estudiar')),
+      appBar: AppBar(
+        leading: const AppDrawerButton(),
+        title: const Text('Estudiar'),
+      ),
       body: session.when(
         skipLoadingOnReload: true,
         loading: () => const Center(child: CircularProgressIndicator()),

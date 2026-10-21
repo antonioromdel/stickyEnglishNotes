@@ -3,6 +3,10 @@ abstract final class AppRoutes {
   static const study = '/study';
   static const progress = '/progress';
   static const settings = '/settings';
+  static const translator = '/translator';
+  static const texts = '/texts';
+  static const tutorial = '/tutorial';
+  static const rate = '/rate';
   static const cards = '/cards';
   static const createCard = '/cards/new';
   static const groups = '/groups';

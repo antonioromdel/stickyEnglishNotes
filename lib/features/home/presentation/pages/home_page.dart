@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_radii.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/widgets/app_drawer_button.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../study/application/study_controller.dart';
 import '../../../study/application/study_session_store.dart';
@@ -21,7 +22,8 @@ class HomePage extends ConsumerWidget {
     final dueCount = ref.watch(dueFlashcardsCountProvider);
     final previewCard = ref.watch(homePreviewCardProvider);
     final streak = ref.watch(studyStreakProvider);
-    final canContinue = ref.watch(studySessionStoreProvider)?.isInProgress ?? false;
+    final canContinue =
+        ref.watch(studySessionStoreProvider)?.isInProgress ?? false;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -38,6 +40,8 @@ class HomePage extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const AppDrawerButton(),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +76,9 @@ class HomePage extends ConsumerWidget {
               loading: () => const LinearProgressIndicator(minHeight: 2),
               error: (error, _) => Text(
                 'No se pudo cargar el progreso.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: scheme.error),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.error,
+                ),
               ),
               data: (count) => _DueSummary(count: count),
             ),

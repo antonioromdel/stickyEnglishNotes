@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,11 +7,13 @@ import '../../features/errors/presentation/pages/errors_page.dart';
 import '../../features/cards/presentation/pages/create_card_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/groups_page.dart';
+import '../../features/home/presentation/pages/coming_soon_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/statistics/presentation/pages/statistics_page.dart';
 import '../../features/study/presentation/pages/study_page.dart';
+import '../../features/tutorial/presentation/pages/tutorial_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -41,20 +44,46 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.progress,
-                builder: (context, state) => const StatisticsPage(),
+                path: AppRoutes.translator,
+                builder: (context, state) => const ComingSoonPage(
+                  title: 'Traductor',
+                  icon: Icons.translate,
+                ),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.settings,
-                builder: (context, state) => const SettingsPage(),
+                path: AppRoutes.texts,
+                builder: (context, state) => const ComingSoonPage(
+                  title: 'Textos',
+                  icon: Icons.text_snippet_outlined,
+                ),
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.progress,
+        builder: (context, state) => const StatisticsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.tutorial,
+        builder: (context, state) => const TutorialPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.rate,
+        builder: (context, state) => const ComingSoonPage(
+          title: 'Valóranos',
+          icon: Icons.star_outline,
+          showMenuButton: false,
+        ),
       ),
       GoRoute(
         path: AppRoutes.createCard,
