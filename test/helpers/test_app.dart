@@ -14,8 +14,10 @@ import 'package:stickeenglishnotes/features/groups/application/groups_providers.
 import 'package:stickeenglishnotes/features/settings/application/notification_settings_controller.dart';
 
 import 'fake_notifications.dart';
+import 'fake_translator.dart';
 import 'fake_tts.dart';
 
+import 'package:stickeenglishnotes/features/translator/application/mlkit_translator_engine.dart';
 import 'package:stickeenglishnotes/features/home/application/home_providers.dart';
 import 'package:stickeenglishnotes/features/statistics/application/statistics_providers.dart';
 import 'package:stickeenglishnotes/features/statistics/domain/study_stats.dart';
@@ -57,6 +59,9 @@ Future<Widget> createTestApp() async {
       ),
       storeUpdateCheckerProvider.overrideWith(
         (ref) => const UnavailableStoreUpdate(),
+      ),
+      translatorEngineProvider.overrideWith(
+        (ref) => const EchoTranslatorEngine(),
       ),
     ],
     child: const StickyEnglishNotesApp(),

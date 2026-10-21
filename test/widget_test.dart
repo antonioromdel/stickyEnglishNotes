@@ -105,19 +105,22 @@ void main() {
     await disposeTestApp(tester);
   });
 
-  testWidgets('traductor y textos están en desarrollo', (tester) async {
+  testWidgets('el traductor está disponible y textos sigue en desarrollo', (
+    tester,
+  ) async {
     await pumpTestApp(tester);
 
     await tester.tap(find.text('Traductor'));
     await tester.pumpAndSettle();
-    expect(find.text('En desarrollo'), findsOneWidget);
+    expect(find.byKey(const Key('translator-input')), findsOneWidget);
+    expect(find.text('En desarrollo'), findsNothing);
 
     await tester.tap(find.text('Textos'));
     await tester.pumpAndSettle();
-    expect(find.text('En desarrollo'), findsWidgets);
+    expect(find.text('En desarrollo'), findsOneWidget);
     expect(
       find.text('Esta sección estará disponible más adelante.'),
-      findsWidgets,
+      findsOneWidget,
     );
 
     await disposeTestApp(tester);

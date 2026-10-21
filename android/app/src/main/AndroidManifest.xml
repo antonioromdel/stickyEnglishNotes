@@ -6,6 +6,8 @@
     <!-- Recordatorio a una hora concreta. Android lo concede al instalar; no hay un segundo diálogo. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- La primera descarga de un idioma del traductor necesita red. Después traduce sin conexión. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Sticky Notes English"
         android:name="${applicationName}"

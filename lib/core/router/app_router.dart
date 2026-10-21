@@ -13,6 +13,7 @@ import '../../features/home/presentation/pages/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/statistics/presentation/pages/statistics_page.dart';
 import '../../features/study/presentation/pages/study_page.dart';
+import '../../features/translator/presentation/pages/translator_page.dart';
 import '../../features/tutorial/presentation/pages/tutorial_page.dart';
 import 'app_routes.dart';
 
@@ -50,10 +51,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.translator,
-                builder: (context, state) => const ComingSoonPage(
-                  title: 'Traductor',
-                  icon: Icons.translate,
-                ),
+                builder: (context, state) => const TranslatorPage(),
               ),
             ],
           ),
