@@ -16,8 +16,13 @@ import '../../features/study/presentation/pages/study_page.dart';
 import '../../features/tutorial/presentation/pages/tutorial_page.dart';
 import 'app_routes.dart';
 
+final rootNavigatorKeyProvider = Provider<GlobalKey<NavigatorState>>(
+  (ref) => GlobalKey<NavigatorState>(),
+);
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: ref.watch(rootNavigatorKeyProvider),
     initialLocation: AppRoutes.home,
     routes: [
       StatefulShellRoute.indexedStack(

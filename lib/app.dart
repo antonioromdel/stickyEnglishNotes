@@ -5,6 +5,7 @@ import 'core/constants/app_info.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/updates/store_update_prompt.dart';
 
 class StickyEnglishNotesApp extends ConsumerWidget {
   const StickyEnglishNotesApp({super.key});
@@ -21,6 +22,9 @@ class StickyEnglishNotesApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        return StoreUpdatePrompt(child: child ?? const SizedBox.shrink());
+      },
     );
   }
 }
