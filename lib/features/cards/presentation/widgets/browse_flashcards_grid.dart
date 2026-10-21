@@ -48,8 +48,9 @@ class BrowseFlashcardsGrid extends ConsumerWidget {
           onTap: () => showFlashcardPreview(
             context: context,
             card: card,
-            onEdit: () => context.push(AppRoutes.editCard(card.id)),
-            onDelete: () => _deleteCard(context, ref, card),
+            cards: cards,
+            onEdit: (selected) => context.push(AppRoutes.editCard(selected.id)),
+            onDelete: (selected) => _deleteCard(context, ref, selected),
           ),
         );
       },

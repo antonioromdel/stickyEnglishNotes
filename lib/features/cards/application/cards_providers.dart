@@ -55,3 +55,20 @@ List<Flashcard> filterFlashcardsByGroup(
       if (groupsByCard[card.id]?.contains(groupId) ?? false) card,
   ];
 }
+
+/// La búsqueda empieza a partir de este número de caracteres.
+const cardSearchMinLength = 3;
+
+/// Filtra por frente o reverso. Con menos de [cardSearchMinLength]
+/// caracteres (tras recortar espacios) devuelve la lista sin cambios.
+List<Flashcard> filterFlashcardsByText(List<Flashcard> cards, String query) {
+  final normalized = query.trim().toLowerCase();
+  if (normalized.length < cardSearchMinLength) return cards;
+
+  return [
+    for (final card in cards)
+      if (card.front.toLowerCase().contains(normalized) ||
+          card.back.toLowerCase().contains(normalized))
+        card,
+  ];
+}

@@ -115,4 +115,71 @@ void main() {
     expect(find.text('hello'), findsOneWidget);
     expect(find.text('run'), findsOneWidget);
   });
+
+  testWidgets('busca por frente y reverso a partir de 3 caracteres', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cardGroupsProvider.overrideWith(
+            (ref) => Stream.value([testGroup(id: 1, name: 'General')]),
+          ),
+          flashcardsProvider.overrideWith(
+            (ref) => Stream.value([
+              testFlashcard(id: 1, front: 'hello', back: 'hola'),
+              testFlashcard(id: 2, front: 'because', back: 'porque'),
+            ]),
+          ),
+          cardGroupMembershipsProvider.overrideWith(
+            (ref) => Stream.value([
+              testMembership(cardId: 1, groupId: 1),
+              testMembership(cardId: 2, groupId: 1),
+            ]),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const CardsPage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('cards-search-field')), findsOneWidget);
+    expect(find.text('hello'), findsOneWidget);
+    expect(find.text('because'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('cards-search-field')), 'po');
+    await tester.pump();
+
+    expect(find.text('Escribe al menos 3 caracteres'), findsOneWidget);
+    expect(find.text('hello'), findsOneWidget);
+    expect(find.text('because'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('cards-search-field')), 'por');
+    await tester.pump();
+
+    expect(find.text('because'), findsOneWidget);
+    expect(find.text('hello'), findsNothing);
+    expect(find.text('porque'), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('cards-search-field')), 'HEL');
+    await tester.pump();
+
+    expect(find.text('hello'), findsOneWidget);
+    expect(find.text('because'), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('cards-search-field')), 'xyz');
+    await tester.pump();
+
+    expect(find.text('Ninguna tarjeta coincide'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('cards-search-clear')));
+    await tester.pump();
+
+    expect(find.text('hello'), findsOneWidget);
+    expect(find.text('because'), findsOneWidget);
+  });
 }

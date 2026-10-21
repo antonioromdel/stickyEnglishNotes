@@ -9,12 +9,32 @@ import '../../../groups/application/groups_providers.dart';
 import '../../application/cards_providers.dart';
 import '../widgets/browse_flashcards_grid.dart';
 import '../widgets/cards_group_filter_bar.dart';
+import '../widgets/cards_search_field.dart';
 
-class CardsPage extends ConsumerWidget {
+class CardsPage extends ConsumerStatefulWidget {
   const CardsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CardsPage> createState() => _CardsPageState();
+}
+
+class _CardsPageState extends ConsumerState<CardsPage> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cards = ref.watch(flashcardsProvider);
     final groups = ref.watch(cardGroupsProvider);
     final selectedGroupId = ref.watch(cardsGroupFilterProvider);
@@ -47,15 +67,25 @@ class CardsPage extends ConsumerWidget {
                 data: (value) => value,
                 orElse: () => const <CardGroupMembership>[],
               );
-          final visible = filterFlashcardsByGroup(
-            items,
-            selectedGroupId,
-            groupIdsByCard(memberships),
+          final visible = filterFlashcardsByText(
+            filterFlashcardsByGroup(
+              items,
+              selectedGroupId,
+              groupIdsByCard(memberships),
+            ),
+            _query,
           );
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (items.isNotEmpty)
+                CardsSearchField(
+                  controller: _searchController,
+                  query: _query,
+                  onChanged: (value) => setState(() => _query = value),
+                  onClear: _clearSearch,
+                ),
               if (groupsList.isNotEmpty)
                 CardsGroupFilterBar(
                   groups: groupsList,
@@ -64,7 +94,13 @@ class CardsPage extends ConsumerWidget {
                     ref.read(cardsGroupFilterProvider.notifier).select(groupId);
                   },
                 ),
-              Expanded(child: _CardsBody(allCards: items, visibleCards: visible)),
+              Expanded(
+                child: _CardsBody(
+                  allCards: items,
+                  visibleCards: visible,
+                  isSearching: _query.trim().length >= cardSearchMinLength,
+                ),
+              ),
             ],
           );
         },
@@ -77,10 +113,12 @@ class _CardsBody extends StatelessWidget {
   const _CardsBody({
     required this.allCards,
     required this.visibleCards,
+    required this.isSearching,
   });
 
   final List<Flashcard> allCards;
   final List<Flashcard> visibleCards;
+  final bool isSearching;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +129,14 @@ class _CardsBody extends StatelessWidget {
         message: 'Crea tu primera tarjeta para comenzar a estudiar.',
         actionLabel: 'Crear tarjeta',
         onAction: () => context.push(AppRoutes.createCard),
+      );
+    }
+
+    if (visibleCards.isEmpty && isSearching) {
+      return const AppEmptyState(
+        icon: Icons.search_off,
+        title: 'Ninguna tarjeta coincide',
+        message: 'Prueba con otra palabra del frente o del reverso.',
       );
     }
 

@@ -30,8 +30,7 @@ class ErrorsPage extends ConsumerWidget {
             return const AppEmptyState(
               icon: Icons.replay,
               title: 'Aún no hay errores',
-              message:
-                  'Cuando marques Otra vez al estudiar, las tarjetas que falles aparecerán aquí.',
+              message: 'Cuando marques Otra vez al estudiar, las tarjetas que falles aparecerán aquí.',
             );
           }
 
@@ -53,6 +52,7 @@ class ErrorsPage extends ConsumerWidget {
                 onOpen: () => showFlashcardPreview(
                   context: context,
                   card: item.card,
+                  cards: [for (final error in items) error.card],
                 ),
                 onDismiss: () => _dismiss(context, ref, item),
               );
